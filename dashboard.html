@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forest Code – CRM Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: { 900:'#0b1121', 800:'#111927', 700:'#1c2940', 600:'#1e3a5f' },
+                        brand: { 600:'#1d4ed8', 500:'#2563eb', 400:'#3b82f6', 300:'#93c5fd', 200:'#bfdbfe', 100:'#dbeafe', 50:'#eff6ff' },
+                        cyan: { 500:'#0891b2', 400:'#06b6d4', 300:'#22d3ee' },
+                        gold: { 500:'#d97706', 400:'#f59e0b', 300:'#fbbf24' }
+                    },
+                    fontFamily: {
+                        heading: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+                        body: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; color: #1e293b; background: #f1f5f9; margin: 0; }
+        h1,h2,h3,h4,h5,h6 { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+
+        /* Login Screen */
+        .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0b1121 0%, #111927 35%, #1c2940 65%, #1e3a5f 100%); }
+
+        /* Sidebar */
+        .sidebar { width: 260px; min-height: 100vh; background: #0b1121; color: #e2e8f0; position: fixed; left: 0; top: 0; z-index: 40; transition: transform 0.3s ease; }
+        .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 10px 20px; border-radius: 8px; margin: 2px 12px; color: #94a3b8; font-size: 14px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; }
+        .sidebar-link:hover, .sidebar-link.active { background: rgba(59,130,246,0.15); color: #93c5fd; }
+
+        /* Main Content */
+        .main-content { margin-left: 260px; min-height: 100vh; padding-bottom: 40px; }
+        .top-bar { background: white; border-bottom: 1px solid #e2e8f0; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 30; }
+
+        /* Cards */
+        .stat-card { background: white; border-radius: 12px; padding: 20px 24px; border: 1px solid #e2e8f0; transition: box-shadow 0.2s ease; }
+        .stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+
+        /* Status badges */
+        .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .badge-new { background: #dbeafe; color: #1d4ed8; }
+        .badge-progress { background: #fef3c7; color: #d97706; }
+        .badge-done { background: #d1fae5; color: #059669; }
+        .badge-paid { background: #e0e7ff; color: #4338ca; }
+        .badge-accepted { background: #d1fae5; color: #065f46; }
+
+        /* Table */
+        .data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .data-table th { background: #f8fafc; padding: 10px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; }
+        .data-table td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        .data-table tr:hover td { background: #f8fafc; }
+        .data-table tr { cursor: pointer; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal-panel { background: white; border-radius: 16px; width: 95%; max-width: 700px; max-height: 90vh; overflow-y: auto; padding: 32px; }
+
+        /* Pipeline kanban */
+        .pipeline-col { background: #f8fafc; border-radius: 12px; padding: 16px; min-height: 200px; flex: 1; }
+        .pipeline-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s ease; }
+        .pipeline-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-color: #93c5fd; }
+
+        /* Button */
+        .btn-primary { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .btn-secondary:hover { background: #e2e8f0; }
+
+        /* Invoice styles */
+        .invoice-preview { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 40px; max-width: 800px; margin: auto; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+        }
+
+        /* Legal Overlays */
+        .legal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(10,22,40,0.85); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; }
+        .legal-overlay.active { display: flex; }
+        .legal-panel { background: white; border-radius: 16px; width: 92%; max-width: 800px; max-height: 85vh; overflow-y: auto; padding: 2.5rem; }
+
+        /* Legal footer bar */
+        .legal-footer { background: #0a0f1a; border-top: 1px solid rgba(255,255,255,0.08); padding: 10px 0; text-align: center; position: fixed; bottom: 0; left: 260px; right: 0; z-index: 25; }
+        .legal-footer a { color: #64748b; font-size: 12px; margin: 0 12px; text-decoration: none; transition: color 0.2s; }
+        .legal-footer a:hover { color: #93c5fd; }
+        @media (max-width: 768px) { .legal-footer { left: 0; } }
+    </style>
+</head>
+<body>
+
+<!-- ==================== LOGIN SCREEN ==================== -->
+<div id="loginScreen" class="login-screen">
+    <div style="max-width: 400px; width: 90%; background: white; border-radius: 16px; padding: 40px;">
+        <div class="text-center mb-8">
+            <img src="data:image/png;base64,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" alt="Forest Code" class="h-14 w-auto mx-auto mb-2">
+            <p class="text-slate-500 text-sm">CRM Dashboard – Admin Login</p>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-slate-700 mb-1">E-Mail</label>
+            <input id="loginEmail" type="email" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent" placeholder="admin@forestcode.de">
+        </div>
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Passwort</label>
+            <input id="loginPassword" type="password" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent" placeholder="••••••••">
+        </div>
+        <button onclick="handleLogin()" class="btn-primary w-full py-3 text-base font-semibold">Anmelden</button>
+        <p id="loginError" class="text-red-500 text-sm text-center mt-3 hidden">Ungültige Anmeldedaten</p>
+    </div>
+</div>
+
+<!-- ==================== DASHBOARD ==================== -->
+<div id="dashboardApp" class="hidden">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="p-5 border-b border-slate-700/50">
+            <img src="data:image/png;base64,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" alt="Forest Code" class="h-10 w-auto mb-2">
+            <p class="text-xs text-slate-400">CRM Dashboard</p>
+        </div>
+        <nav class="py-4">
+            <a class="sidebar-link active" data-view="overview" onclick="switchView('overview')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Übersicht
+            </a>
+            <a class="sidebar-link" data-view="pipeline" onclick="switchView('pipeline')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+                Pipeline
+            </a>
+            <a class="sidebar-link" data-view="customers" onclick="switchView('customers')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Kunden
+            </a>
+            <a class="sidebar-link" data-view="invoices" onclick="switchView('invoices')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Rechnungen
+            </a>
+            <a class="sidebar-link" data-view="contracts" onclick="switchView('contracts')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                Verträge
+            </a>
+            <a class="sidebar-link" data-view="emails" onclick="switchView('emails')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                E-Mails
+            </a>
+        </nav>
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700/50">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-sm font-bold">M</div>
+                <div>
+                    <div class="text-sm font-medium text-slate-200">Musawar</div>
+                    <div class="text-xs text-slate-400">Admin</div>
+                </div>
+            </div>
+            <button onclick="handleLogout()" class="mt-3 text-xs text-slate-500 hover:text-red-400 transition">Abmelden</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="md:hidden p-2 hover:bg-slate-100 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <h1 id="pageTitle" class="text-lg font-heading font-bold text-navy-900">Übersicht</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="openNewInquiry()" class="btn-primary text-sm">+ Neue Anfrage</button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="p-6 md:p-8">
+
+            <!-- ========= OVERVIEW VIEW ========= -->
+            <div id="view-overview">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                    <div class="stat-card">
+                        <div class="text-sm text-slate-500 mb-1">Offene Anfragen</div>
+                        <div id="statOpen" class="text-2xl font-bold text-navy-900">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="text-sm text-slate-500 mb-1">In Bearbeitung</div>
+                        <div id="statProgress" class="text-2xl font-bold text-gold-500">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="text-sm text-slate-500 mb-1">Abgeschlossen</div>
+                        <div id="statDone" class="text-2xl font-bold text-green-600">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="text-sm text-slate-500 mb-1">Gesamtumsatz</div>
+                        <div id="statRevenue" class="text-2xl font-bold text-brand-600">0 €</div>
+                    </div>
+                </div>
+
+                <!-- Recent Inquiries -->
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                        <h2 class="font-heading font-bold text-navy-900">Letzte Anfragen</h2>
+                        <button onclick="switchView('pipeline')" class="text-sm text-brand-500 hover:underline">Alle anzeigen →</button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Kunden-Nr.</th>
+                                <th>Name</th>
+                                <th>Branche</th>
+                                <th>Paket</th>
+                                <th>Preis</th>
+                                <th>Status</th>
+                                <th>Datum</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentTableBody">
+                            <tr><td colspan="6" class="text-center text-slate-400 py-8">Noch keine Anfragen vorhanden</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ========= PIPELINE VIEW ========= -->
+            <div id="view-pipeline" class="hidden">
+                <div class="flex gap-5 overflow-x-auto pb-4">
+                    <!-- Column: Erhalten -->
+                    <div class="pipeline-col min-w-[260px]">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                            <span class="font-semibold text-sm text-slate-700">Erhalten</span>
+                            <span id="countNew" class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full ml-auto">0</span>
+                        </div>
+                        <div id="pipelineNew"></div>
+                    </div>
+                    <!-- Column: In Bearbeitung -->
+                    <div class="pipeline-col min-w-[260px]">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                            <span class="font-semibold text-sm text-slate-700">In Bearbeitung</span>
+                            <span id="countProgress" class="text-xs bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full ml-auto">0</span>
+                        </div>
+                        <div id="pipelineProgress"></div>
+                    </div>
+                    <!-- Column: Abgeschlossen -->
+                    <div class="pipeline-col min-w-[260px]">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span class="font-semibold text-sm text-slate-700">Abgeschlossen</span>
+                            <span id="countDone" class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full ml-auto">0</span>
+                        </div>
+                        <div id="pipelineDone"></div>
+                    </div>
+                    <!-- Column: Bezahlt -->
+                    <div class="pipeline-col min-w-[260px]">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-3 h-3 rounded-full bg-indigo-500"></div>
+                            <span class="font-semibold text-sm text-slate-700">Bezahlt</span>
+                            <span id="countPaid" class="text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full ml-auto">0</span>
+                        </div>
+                        <div id="pipelinePaid"></div>
+                    </div>
+                    <!-- Column: Abgenommen -->
+                    <div class="pipeline-col min-w-[260px]">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-3 h-3 rounded-full bg-emerald-600"></div>
+                            <span class="font-semibold text-sm text-slate-700">Abgenommen</span>
+                            <span id="countAccepted" class="text-xs bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full ml-auto">0</span>
+                        </div>
+                        <div id="pipelineAccepted"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========= CUSTOMERS VIEW ========= -->
+            <div id="view-customers" class="hidden">
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                        <h2 class="font-heading font-bold text-navy-900">Kundenliste</h2>
+                        <div class="flex gap-2">
+                            <input id="customerSearch" type="text" placeholder="Kunde suchen..." class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" oninput="renderCustomers()">
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Kunden-Nr.</th>
+                                <th>Name</th>
+                                <th>E-Mail</th>
+                                <th>Telefon</th>
+                                <th>Branche</th>
+                                <th>Anfragen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customerTableBody">
+                            <tr><td colspan="6" class="text-center text-slate-400 py-8">Noch keine Kunden vorhanden</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ========= INVOICES VIEW ========= -->
+            <div id="view-invoices" class="hidden">
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                        <h2 class="font-heading font-bold text-navy-900">Rechnungen</h2>
+                        <button onclick="openNewInvoice()" class="btn-primary text-sm">+ Neue Rechnung</button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Rechnungs-Nr.</th>
+                                <th>Kunde</th>
+                                <th>Betrag</th>
+                                <th>Datum</th>
+                                <th>Status</th>
+                                <th>Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceTableBody">
+                            <tr><td colspan="6" class="text-center text-slate-400 py-8">Noch keine Rechnungen vorhanden</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ========= CONTRACTS VIEW ========= -->
+            <div id="view-contracts" class="hidden">
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                        <h2 class="font-heading font-bold text-navy-900">Verträge</h2>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Vertrag-Nr.</th>
+                                <th>Kunde</th>
+                                <th>Betrag</th>
+                                <th>Datum</th>
+                                <th>Status</th>
+                                <th>Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contractTableBody">
+                            <tr><td colspan="6" class="text-center text-slate-400 py-8">Noch keine Verträge vorhanden</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+                        <!-- ========= EMAILS VIEW ========= -->
+            <div id="view-emails" class="hidden">
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100">
+                        <h2 class="font-heading font-bold text-navy-900">E-Mail Posteingang</h2>
+                        <p class="text-sm text-slate-500 mt-1">Anfragen von info@mominsys.de</p>
+                    </div>
+                    <div id="emailList" class="divide-y divide-slate-100">
+                        <div class="p-5 text-center text-slate-400">Noch keine E-Mails vorhanden</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ==================== DETAIL MODAL ==================== -->
+<div id="detailModal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal-panel">
+        <div class="flex items-center justify-between mb-6">
+            <h2 id="modalTitle" class="text-xl font-heading font-bold text-navy-900">Anfrage Details</h2>
+            <button onclick="closeModal()" class="p-2 hover:bg-slate-100 rounded-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<!-- ==================== NEW INQUIRY MODAL ==================== -->
+<div id="newInquiryModal" class="modal-overlay" onclick="if(event.target===this)closeNewInquiry()">
+    <div class="modal-panel">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-heading font-bold text-navy-900">Neue Anfrage anlegen</h2>
+            <button onclick="closeNewInquiry()" class="p-2 hover:bg-slate-100 rounded-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form onsubmit="return submitNewInquiry(event)">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Name *</label>
+                    <input id="inqName" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">E-Mail *</label>
+                    <input id="inqEmail" type="email" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Telefon</label>
+                    <input id="inqPhone" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Branche</label>
+                    <select id="inqBranche" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="">Bitte wählen</option>
+                        <option>Arztpraxis</option>
+                        <option>Handwerker</option>
+                        <option>Werkstatt</option>
+                        <option>Gastronomie</option>
+                        <option>Einzelhandel</option>
+                        <option>Sonstiges</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Website-Typ</label>
+                <select id="inqType" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="onepager">Onepager (1 Seite)</option>
+                    <option value="standard">Standard (bis 5 Seiten)</option>
+                    <option value="premium">Premium (mehr als 5 Seiten)</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Service-Modell</label>
+                <select id="inqService" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="einmalig">Einmalig</option>
+                    <option value="pro">Pro (45 €/Monat)</option>
+                    <option value="max">Max (70 €/Monat)</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Gewünschte Features</label>
+                <input id="inqFeatures" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="z.B. Terminbuchung, SEO, Chatbot">
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Nachricht</label>
+                <textarea id="inqMessage" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Weitere Informationen..."></textarea>
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button type="button" onclick="closeNewInquiry()" class="btn-secondary">Abbrechen</button>
+                <button type="submit" class="btn-primary">Anfrage speichern</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ==================== INVOICE MODAL ==================== -->
+<div id="invoiceModal" class="modal-overlay" onclick="if(event.target===this)closeInvoiceModal()">
+    <div class="modal-panel" style="max-width: 850px;">
+        <div id="invoiceModalContent"></div>
+    </div>
+</div>
+
+<!-- ===== CONTRACT MODAL ===== -->
+<div id="contractModal" class="modal-overlay" onclick="if(event.target===this) closeContractModal()">
+    <div class="modal-panel" style="max-width:900px;">
+        <div id="contractModalContent"></div>
+    </div>
+</div>
+
+<!-- ===== AGB OVERLAY ===== -->
+<div id="agbOverlay" class="legal-overlay" onclick="if(event.target===this) closeLegal('agb')">
+    <div class="legal-panel">
+        <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-heading font-bold text-navy-900">Allgemeine Geschäftsbedingungen (AGB)</h2><button onclick="closeLegal('agb')" class="text-slate-400 hover:text-slate-600 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div>
+        <div class="text-slate-600 text-sm space-y-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p class="font-semibold text-navy-900">Hinweis zur Datenverarbeitung</p>
+                <p class="mt-1">Durch die Nutzung der Dienste von Forest Code (mominSys UG, haftungsbeschränkt) erklären Sie sich damit einverstanden, dass Ihre personenbezogenen Daten im Rahmen der Auftragsbearbeitung verarbeitet werden. Ihre Daten werden ausschließlich zur Erbringung der vereinbarten Leistungen verwendet und nicht an Dritte weitergegeben, es sei denn, dies ist zur Vertragserfüllung zwingend erforderlich.</p>
+            </div>
+            <p><strong>mominSys UG (haftungsbeschränkt)</strong><br>Handelsname: Forest Code<br>Hammerwerkstr. 1 A, 79183 Waldkirch<br>E-Mail: info@mominsys.de<br>Amtsgericht Freiburg, HRB 725099<br>Geschäftsführer: Musawar Momin</p>
+            <h3 class="font-bold text-navy-900 text-base mt-6">§ 1 Geltungsbereich</h3>
+            <p>(1) Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge zwischen mominSys UG (haftungsbeschränkt), Handelsname Forest Code (nachfolgend „Auftragnehmer"), und dem Kunden (nachfolgend „Auftraggeber") über die Erstellung, Gestaltung und Pflege von Websites sowie damit verbundene digitale Dienstleistungen.</p>
+            <p>(2) Abweichende Geschäftsbedingungen des Auftraggebers werden nicht anerkannt, es sei denn, der Auftragnehmer stimmt ihrer Geltung ausdrücklich schriftlich zu.</p>
+            <p>(3) Diese AGB gelten auch für alle zukünftigen Geschäftsbeziehungen, auch wenn sie nicht nochmals ausdrücklich vereinbart werden.</p>
+            <h3 class="font-bold text-navy-900 text-base mt-6">§ 2 Vertragsschluss und Leistungsbeschreibung</h3>
+            <p>(1) Ein Vertrag kommt durch die schriftliche oder elektronische Auftragsbestätigung des Auftragnehmers zustande. Angebote des Auftragnehmers sind freibleibend.</p>
+            <p>(2) Der Umfang der Leistungen ergibt sich aus der jeweiligen Auftragsbestätigung bzw. dem individuellen Angebot. Änderungen oder Erweiterungen des Leistungsumfangs bedürfen der schriftlichen Vereinbarung und können zu einer Anpassung des Preises und der Lieferzeit führen.</p>
+            <p>(3) Der Auftragnehmer erbringt seine Leistungen unter Berücksichtigung der Kleinunternehmerregelung gemäß § 19 UStG. Auf den Rechnungen wird keine Umsatzsteuer ausgewiesen.</p>
+            <h3 class="font-bold text-navy-900 text-base mt-6">§ 3 Mitwirkungspflichten des Auftraggebers</h3>
+            <p>(1) Der Auftraggeber stellt dem Auftragnehmer alle für die Durchführung des Projekts erforderlichen Informationen, Texte, Bilder und sonstigen Materialien rechtzeitig und in geeigneter Form zur Verfügung.</p>
+            <p>(2) Verzögerungen, die auf unzureichende oder verspätete Zulieferung durch den Auftraggeber zurückzuführen sind, verlängern den vereinbarten Fertigstellungstermin entsprechend.</p>
+            <p>(3) Der Auftraggeber stellt sicher, dass die bereitgestellten Inhalte frei von Rechten Dritter sind und keine gesetzlichen Bestimmungen verletzen.</p>
+            <h3 class="font-bold text-navy-900 text-base mt-6">§ 4 Preise und Zahlungsbedingungen</h3>
+            <p>(1) Die vereinbarten Preise sind Endpreise. Gemäß § 19 UStG wird keine Umsatzsteuer erhoben und daher auch nicht ausgewiesen.</p>
+            <p>(2) Rechnungen sind innerhalb von 14 Tagen nach Rechnungsstellung ohne Abzug fällig, sofern nicht abweichend vereinbart.</p>
+            <p>(3) Bei Zahlungsverzug ist der Auftragnehmer berechtigt, Verzugszinsen in gesetzlicher Höhe zu berechnen. Darüber hinausgehende Schadensersatzansprüche bleiben vorbehalten.</p>
+            <h3 class="font-bold text-navy-900 text-base mt-6">§ 5 Abnahme</h3>
+            <p>(1) Nach Fertigstellung wird das Projekt dem Auftraggeber zur Abnahme vorgelegt. Der Auftraggeber ist verpflichtet, die Leistung innerhalb von <strong>5 Werktagen</strong> nach Vorlage zu prüfen und die Abnahme zu erklären oder etwaige Mängel schriftlich mitzuteilen.</p>
+            <p>(2) Erfolgt innerhalb der 5-Werktage-Frist keine Rückmeldung, gilt die Leistung als abgenommen.</p>
+            <p>(3) Unwesentliche Mängel berechtigen nicht zur Verweigerung der Abnahme.</p>
+            <h3 class="font-bold text-navy-900 text-base mt-6">§ 6 Gewährleistung und Haftung</h3>
+            <p>(1) Der Auftragnehmer gewährleistet, dass die erbrachten Leistungen den vereinbarten Anforderungen entsprechen.</p>
+            <p>(2) Mängel sind vom Auftraggeber unverzüglich nach Entdeckung schriftlich anzuzeigen. Der Auftragnehmer hat das Recht, innerhalb einer angemessenen Frist nachzubessern.</p>
+            <p>(3) Die Haftung des Auftragnehmers ist auf Vorsatz und grobe Fahrlässigkeit beschränkt, soweit gesetzlich zulässig. Die Haftung für mittelbare Schäden, entgangenen Gewinn und Datenverlust ist ausgeschlossen, es sei denn, es liegt Vorsatz oder grobe Fahrlässigkeit vor.</p>
+            <h3 class="font-bold text-navy-900 text-base mt-6">§ 7 Urheberrecht und Nutzungsrechte</h3>
+            <p>(1) Der Auftragnehmer überträgt dem Auftraggeber nach vollständiger Bezahlung die einfachen Nutzungsrechte an der erstellten Website und deren Inhalten, soweit sie vom Auftragnehmer erstellt wurden.</p>
+            <p>(2) Das Urheberrecht an den erstellten Werken verbleibt beim Auftragnehmer. Quellcodes, Entwürfe und Konzepte dürfen ohne ausdrückliche Genehmigung nicht an Dritte weitergegeben oder für andere Projekte verwendet werden.</p>
+            <p>(3) Der Auftragnehmer behält sich das Recht vor, die erstellten Arbeiten als Referenz zu verwenden, sofern der Auftraggeber nicht ausdrücklich widerspricht.</p>
+            <h3 class="font-bold text-navy-900 text-base mt-6">§ 8 Vertragslaufzeit und Kündigung</h3>
+            <p>(1) Die Vertragslaufzeit ergibt sich aus dem jeweiligen Angebot. Wartungs- und Pflegeverträge verlängern sich automatisch um jeweils einen Monat, wenn sie nicht mit einer Frist von 4 Wochen zum Laufzeitende gekündigt werden.</p>
+            <p>(2) Das Recht zur außerordentlichen Kündigung aus wichtigem Grund bleibt unberührt.</p>
+            <p>(3) Im Falle einer Kündigung durch den Auftraggeber vor Fertigstellung sind die bis dahin erbrachten Leistungen zu vergüten.</p>
+            <h3 class="font-bold text-navy-900 text-base mt-6">§ 9 Datenschutz und Vertraulichkeit</h3>
+            <p>(1) Der Auftragnehmer verarbeitet personenbezogene Daten des Auftraggebers ausschließlich zur Vertragserfüllung und im Einklang mit den geltenden Datenschutzgesetzen (DSGVO, BDSG).</p>
+            <p>(2) Personenbezogene Daten werden nicht an Dritte weitergegeben, es sei denn, dies ist zur Vertragserfüllung erforderlich oder gesetzlich vorgeschrieben.</p>
+            <p>(3) Beide Parteien verpflichten sich, vertrauliche Informationen, die im Rahmen der Zusammenarbeit bekannt werden, nicht an Dritte weiterzugeben und vertraulich zu behandeln.</p>
+            <p>(4) Weitere Informationen zum Datenschutz finden Sie in unserer Datenschutzerklärung.</p>
+            <h3 class="font-bold text-navy-900 text-base mt-6">§ 10 Schlussbestimmungen</h3>
+            <p>(1) Es gilt das Recht der Bundesrepublik Deutschland.</p>
+            <p>(2) Gerichtsstand ist, soweit gesetzlich zulässig, der Sitz des Auftragnehmers (Waldkirch).</p>
+            <p>(3) Sollten einzelne Bestimmungen dieser AGB unwirksam sein oder werden, bleibt die Wirksamkeit der übrigen Bestimmungen davon unberührt. Die unwirksame Bestimmung wird durch eine solche ersetzt, die dem wirtschaftlichen Zweck der unwirksamen Bestimmung am nächsten kommt.</p>
+            <p>(4) Änderungen und Ergänzungen dieser AGB bedürfen der Schriftform.</p>
+            <p class="text-slate-400 italic mt-6">Stand: November 2026</p>
+        </div>
+    </div>
+</div>
+
+<!-- ===== IMPRESSUM OVERLAY ===== -->
+<div id="impressumOverlay" class="legal-overlay" onclick="if(event.target===this) closeLegal('impressum')">
+    <div class="legal-panel">
+        <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-heading font-bold text-navy-900">Impressum</h2><button onclick="closeLegal('impressum')" class="text-slate-400 hover:text-slate-600 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div>
+        <div class="text-slate-600 text-sm space-y-4">
+            <h3 class="font-bold text-navy-900 text-base">Angaben gemäß § 5 TMG</h3>
+            <p><strong>mominSys UG (haftungsbeschränkt)</strong><br>Handelsname: Forest Code<br>Hammerwerkstr. 1 A<br>79183 Waldkirch<br>Deutschland</p>
+            <h3 class="font-bold text-navy-900 text-base">Vertreten durch</h3>
+            <p>Geschäftsführer: Musawar Momin</p>
+            <h3 class="font-bold text-navy-900 text-base">Kontakt</h3>
+            <p>E-Mail: info@mominsys.de</p>
+            <h3 class="font-bold text-navy-900 text-base">Registereintrag</h3>
+            <p>Eintragung im Handelsregister<br>Registergericht: Amtsgericht Freiburg<br>Registernummer: HRB 725099</p>
+            <h3 class="font-bold text-navy-900 text-base">Umsatzsteuer</h3>
+            <p>Gemäß § 19 UStG wird keine Umsatzsteuer erhoben (Kleinunternehmerregelung).</p>
+            <h3 class="font-bold text-navy-900 text-base">Verantwortlich für den Inhalt</h3>
+            <p>Musawar Momin<br>Hammerwerkstr. 1 A<br>79183 Waldkirch</p>
+        </div>
+    </div>
+</div>
+
+<!-- ===== DATENSCHUTZ OVERLAY ===== -->
+<div id="datenschutzOverlay" class="legal-overlay" onclick="if(event.target===this) closeLegal('datenschutz')">
+    <div class="legal-panel">
+        <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-heading font-bold text-navy-900">Datenschutzerklärung</h2><button onclick="closeLegal('datenschutz')" class="text-slate-400 hover:text-slate-600 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div>
+        <div class="text-slate-600 text-sm space-y-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p class="font-semibold text-navy-900">Hinweis zur Datenverarbeitung</p>
+                <p class="mt-1">Durch die Nutzung von Forest Code und des Forest Code Dashboards erklären Sie sich damit einverstanden, dass Ihre personenbezogenen Daten zur Verarbeitung und Erbringung unserer Leistungen verwendet werden. Ihre Daten werden nicht an Dritte weitergegeben und ausschließlich zur Auftragsbearbeitung genutzt.</p>
+            </div>
+            <h3 class="font-bold text-navy-900 text-base">1. Datenschutz auf einen Blick</h3>
+            <p>Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können.</p>
+            <h3 class="font-bold text-navy-900 text-base">2. Verantwortliche Stelle</h3>
+            <p>mominSys UG (haftungsbeschränkt)<br>Handelsname: Forest Code<br>Hammerwerkstr. 1 A<br>79183 Waldkirch<br>E-Mail: info@mominsys.de<br>Geschäftsführer: Musawar Momin<br>Amtsgericht Freiburg, HRB 725099</p>
+            <h3 class="font-bold text-navy-900 text-base">3. Datenerfassung auf dieser Website</h3>
+            <p><strong>Wie erfassen wir Ihre Daten?</strong><br>Ihre Daten werden zum einen dadurch erhoben, dass Sie uns diese mitteilen, z. B. durch die Eingabe in unseren Projekt-Konfigurator oder über das Kontaktformular. Andere Daten werden automatisch beim Besuch der Website durch unsere IT-Systeme erfasst. Das sind vor allem technische Daten (z. B. Internetbrowser, Betriebssystem oder Uhrzeit des Seitenaufrufs).</p>
+            <p><strong>Projekt-Konfigurator:</strong> Die im Konfigurator eingegebenen Daten (Name, E-Mail, Telefon, Projektdetails) werden ausschließlich zur Bearbeitung Ihrer Projektanfrage verwendet und in unserem CRM-System gespeichert.</p>
+            <p><strong>Wofür nutzen wir Ihre Daten?</strong><br>Die Daten werden erhoben, um eine fehlerfreie Bereitstellung der Website zu gewährleisten und zur Bearbeitung Ihrer Anfragen. Eine anderweitige Verwendung oder Weitergabe an Dritte findet nicht statt.</p>
+            <h3 class="font-bold text-navy-900 text-base">4. Hosting</h3>
+            <p>Diese Website wird bei Netlify gehostet. Details zum Datenschutz bei Netlify finden Sie unter: netlify.com/privacy.</p>
+            <h3 class="font-bold text-navy-900 text-base">5. Ihre Rechte</h3>
+            <p>Sie haben jederzeit das Recht auf unentgeltliche Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten. Sie haben außerdem ein Recht, die Berichtigung, Sperrung oder Löschung dieser Daten zu verlangen. Hierzu sowie zu weiteren Fragen zum Thema Datenschutz können Sie sich jederzeit an uns wenden (info@mominsys.de).</p>
+            <p>Ihnen steht ferner ein Beschwerderecht bei der zuständigen Aufsichtsbehörde zu.</p>
+            <h3 class="font-bold text-navy-900 text-base">6. Datensicherheit</h3>
+            <p>Die Kommunikation über diese Website erfolgt über eine SSL-verschlüsselte Verbindung (HTTPS). Damit wird sichergestellt, dass Ihre Daten bei der Übertragung nicht von Dritten mitgelesen werden können.</p>
+            <h3 class="font-bold text-navy-900 text-base">7. Cookies</h3>
+            <p>Diese Website verwendet keine Tracking-Cookies und keine Analyse-Tools von Drittanbietern. Es werden lediglich technisch notwendige Cookies eingesetzt, die für den Betrieb der Website erforderlich sind.</p>
+            <h3 class="font-bold text-navy-900 text-base">8. Auftragsverarbeitung</h3>
+            <p>Für die Speicherung von Projektanfragen nutzen wir Supabase als Datenbankanbieter. Mit diesem Anbieter haben wir einen Auftragsverarbeitungsvertrag (AVV) geschlossen, der sicherstellt, dass Ihre Daten nur nach unserer Weisung und unter Einhaltung der DSGVO verarbeitet werden.</p>
+            <p class="text-slate-400 italic mt-6">Stand: November 2026</p>
+        </div>
+    </div>
+</div>
+
+<!-- ===== LEGAL FOOTER BAR ===== -->
+<div id="legalFooter" class="legal-footer hidden">
+    <a href="#" onclick="openLegal('agb'); return false;">AGB</a>
+    <a href="#" onclick="openLegal('datenschutz'); return false;">Datenschutzerklärung</a>
+    <a href="#" onclick="openLegal('impressum'); return false;">Impressum</a>
+</div>
+
+<script>
+// ==================== SUPABASE CONNECTION ====================
+var SUPABASE_URL = 'https://pyvkubkgiishtuasjimj.supabase.co';
+var SUPABASE_ANON_KEY = 'sb_publishable_e7xYAJRAG6-sTZAIPkm8PA_QvqWGr70';
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+
+// ==================== LEGAL OVERLAY FUNCTIONS ====================
+function openLegal(type) {
+    var el = document.getElementById(type + 'Overlay');
+    if (el) el.classList.add('active');
+}
+function closeLegal(type) {
+    var el = document.getElementById(type + 'Overlay');
+    if (el) el.classList.remove('active');
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeLegal('agb');
+        closeLegal('impressum');
+        closeLegal('datenschutz');
+        closeModal();
+        closeInvoiceModal();
+        closeContractModal();
+    }
+});
+
+// Local cache
+var crmData = { inquiries: [], invoices: [] };
+
+async function loadInquiries() {
+    var res = await sb.from('inquiries').select('*').order('created_at', { ascending: false });
+    if (res.error) { console.error('Load inquiries error:', JSON.stringify(res.error)); alert('Fehler beim Laden der Anfragen: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    // Map snake_case DB columns to camelCase for existing UI code
+    crmData.inquiries = (res.data || []).map(function(r) {
+        return {
+            id: r.id, customerId: r.customer_id, name: r.name, email: r.email,
+            phone: r.phone, company: r.company, branche: r.branche,
+            siteType: r.site_type, pages: r.pages, design: r.design,
+            serviceModel: r.service_model, features: r.features,
+            customFeatures: r.custom_features, colors: r.colors,
+            hasLogo: r.has_logo, hasWebsite: r.has_website,
+            existingUrl: r.existing_url, wantsRedesign: r.wants_redesign,
+            referenceWebsites: r.reference_websites, message: r.message,
+            summary: r.summary, basePrice: r.base_price, featurePrice: r.feature_price,
+            totalPrice: r.total_price, status: r.status, source: r.source,
+            createdAt: r.created_at, statusChangedAt: r.status_changed_at
+        };
+    });
+}
+
+async function loadInvoices() {
+    var res = await sb.from('invoices').select('*').order('created_at', { ascending: false });
+    if (res.error) { console.error('Load invoices error:', JSON.stringify(res.error)); alert('Fehler beim Laden der Rechnungen: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    crmData.invoices = (res.data || []).map(function(r) {
+        return {
+            id: r.id, number: r.number, inquiryId: r.inquiry_id,
+            customerId: r.customer_id, customerName: r.customer_name,
+            customerEmail: r.customer_email, amount: r.amount,
+            items: r.items || [], paid: r.paid, createdAt: r.created_at
+        };
+    });
+}
+
+async function loadAllData() {
+    await Promise.all([loadInquiries(), loadInvoices()]);
+}
+
+// ==================== AUTH (Supabase Auth) ====================
+async function handleLogin() {
+    var email = document.getElementById('loginEmail').value.trim();
+    var pass = document.getElementById('loginPassword').value;
+    var errorEl = document.getElementById('loginError');
+    errorEl.classList.add('hidden');
+
+    if (!email || !pass) {
+        errorEl.textContent = 'Bitte E-Mail und Passwort eingeben.';
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    try {
+        var res = await sb.auth.signInWithPassword({ email: email, password: pass });
+        if (res.error) {
+            errorEl.textContent = res.error.message || 'Ungültige Anmeldedaten';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('dashboardApp').classList.remove('hidden');
+        document.getElementById('legalFooter').classList.remove('hidden');
+        refreshAll();
+    } catch (err) {
+        errorEl.textContent = 'Verbindungsfehler: ' + (err.message || 'Unbekannter Fehler');
+        errorEl.classList.remove('hidden');
+    }
+}
+
+async function handleLogout() {
+    await sb.auth.signOut();
+    document.getElementById('dashboardApp').classList.add('hidden');
+    document.getElementById('legalFooter').classList.add('hidden');
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('loginPassword').value = '';
+}
+
+// Check session on load
+(async function checkSession() {
+    var session = await sb.auth.getSession();
+    if (session.data && session.data.session) {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('dashboardApp').classList.remove('hidden');
+        document.getElementById('legalFooter').classList.remove('hidden');
+        setTimeout(refreshAll, 100);
+    }
+})();
+
+// ==================== NAVIGATION ====================
+function switchView(view) {
+    var views = ['overview', 'pipeline', 'customers', 'invoices', 'contracts', 'emails'];
+    views.forEach(function(v) {
+        document.getElementById('view-' + v).classList.toggle('hidden', v !== view);
+    });
+    document.querySelectorAll('.sidebar-link').forEach(function(el) {
+        el.classList.toggle('active', el.dataset.view === view);
+    });
+    var titles = { overview:'Übersicht', pipeline:'Pipeline', customers:'Kunden', invoices:'Rechnungen', contracts:'Verträge', emails:'E-Mails' };
+    document.getElementById('pageTitle').textContent = titles[view] || 'Dashboard';
+    if (view === 'pipeline') renderPipeline();
+    if (view === 'customers') renderCustomers();
+    if (view === 'invoices') renderInvoices();
+    if (view === 'contracts') renderContracts();
+    if (view === 'emails') renderEmails();
+}
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ==================== AUTO ABGENOMMEN (5-Tage-Frist) ====================
+async function checkAutoAbgenommen() {
+    var now = new Date();
+    var fiveDaysMs = 5 * 24 * 60 * 60 * 1000;
+    var updates = [];
+    crmData.inquiries.forEach(function(inq) {
+        if (inq.status === 'bezahlt' && inq.statusChangedAt) {
+            var changedDate = new Date(inq.statusChangedAt);
+            if (now - changedDate >= fiveDaysMs) {
+                updates.push(inq.id);
+            }
+        }
+    });
+    for (var i = 0; i < updates.length; i++) {
+        await sb.from('inquiries').update({ status: 'abgenommen', status_changed_at: new Date().toISOString() }).eq('id', updates[i]);
+    }
+    if (updates.length > 0) {
+        await loadInquiries();
+    }
+}
+
+// ==================== REFRESH / STATS ====================
+async function refreshAll() {
+    await loadAllData();
+    await checkAutoAbgenommen();
+    updateStats();
+    renderRecentTable();
+    // Re-render the currently active view
+    var views = ['pipeline', 'customers', 'invoices', 'emails'];
+    views.forEach(function(v) {
+        var el = document.getElementById('view-' + v);
+        if (el && !el.classList.contains('hidden')) {
+            if (v === 'pipeline') renderPipeline();
+            if (v === 'customers') renderCustomers();
+            if (v === 'invoices') renderInvoices();
+            if (v === 'contracts') renderContracts();
+            if (v === 'emails') renderEmails();
+        }
+    });
+}
+
+function updateStats() {
+    var inqs = crmData.inquiries;
+    var open = inqs.filter(function(i){ return i.status === 'neu'; }).length;
+    var prog = inqs.filter(function(i){ return i.status === 'bearbeitung'; }).length;
+    var done = inqs.filter(function(i){ return i.status === 'abgeschlossen' || i.status === 'bezahlt' || i.status === 'abgenommen'; }).length;
+    var revenue = crmData.invoices.filter(function(inv){ return inv.paid; }).reduce(function(sum, inv){ return sum + inv.amount; }, 0);
+
+    document.getElementById('statOpen').textContent = open;
+    document.getElementById('statProgress').textContent = prog;
+    document.getElementById('statDone').textContent = done;
+    document.getElementById('statRevenue').textContent = revenue.toLocaleString('de-DE') + ' €';
+}
+
+// ==================== RECENT TABLE ====================
+function renderRecentTable() {
+    var tbody = document.getElementById('recentTableBody');
+    var inqs = crmData.inquiries.slice().reverse().slice(0, 8);
+    if (inqs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400 py-8">Noch keine Anfragen vorhanden</td></tr>';
+        return;
+    }
+    tbody.innerHTML = inqs.map(function(inq) {
+        return '<tr onclick="openDetail(\'' + inq.id + '\')">' +
+            '<td class="font-mono text-xs text-slate-500">' + inq.customerId + '</td>' +
+            '<td class="font-medium">' + esc(inq.name) + '</td>' +
+            '<td>' + esc(inq.branche || '–') + '</td>' +
+            '<td>' + esc(inq.serviceModel || '–') + '</td>' +
+            '<td class="font-semibold text-brand-600">' + (inq.totalPrice ? inq.totalPrice.toLocaleString('de-DE') + ' €' : '–') + '</td>' +
+            '<td>' + statusBadge(inq.status) + '</td>' +
+            '<td class="text-slate-500 text-sm">' + formatDate(inq.createdAt) + '</td>' +
+        '</tr>';
+    }).join('');
+}
+
+// ==================== PIPELINE ====================
+function renderPipeline() {
+    var statuses = { neu:'pipelineNew', bearbeitung:'pipelineProgress', abgeschlossen:'pipelineDone', bezahlt:'pipelinePaid', abgenommen:'pipelineAccepted' };
+    var counts = { neu:0, bearbeitung:0, abgeschlossen:0, bezahlt:0, abgenommen:0 };
+
+    Object.keys(statuses).forEach(function(s) { document.getElementById(statuses[s]).innerHTML = ''; });
+
+    crmData.inquiries.forEach(function(inq) {
+        var container = document.getElementById(statuses[inq.status]);
+        if (!container) return;
+        counts[inq.status]++;
+        container.innerHTML += '<div class="pipeline-card" onclick="openDetail(\'' + inq.id + '\')">' +
+            '<div class="flex justify-between items-start mb-2">' +
+                '<span class="font-medium text-sm">' + esc(inq.name) + '</span>' +
+                '<span class="text-xs text-slate-400 font-mono">' + inq.customerId + '</span>' +
+            '</div>' +
+            '<div class="text-xs text-slate-500">' + esc(inq.branche || '–') + ' · ' + esc(inq.siteType || '–') + '</div>' +
+            (inq.totalPrice ? '<div class="text-sm font-semibold text-brand-600 mt-1">' + inq.totalPrice.toLocaleString('de-DE') + ' €</div>' : '') +
+            (inq.source === 'konfigurator' ? '<span class="inline-block mt-1 text-[10px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded">Konfigurator</span>' : '') +
+            '<div class="text-xs text-slate-400 mt-1">' + formatDate(inq.createdAt) + '</div>' +
+        '</div>';
+    });
+
+    document.getElementById('countNew').textContent = counts.neu;
+    document.getElementById('countProgress').textContent = counts.bearbeitung;
+    document.getElementById('countDone').textContent = counts.abgeschlossen;
+    document.getElementById('countPaid').textContent = counts.bezahlt;
+    document.getElementById('countAccepted').textContent = counts.abgenommen;
+}
+
+// ==================== CUSTOMERS ====================
+function renderCustomers() {
+    var tbody = document.getElementById('customerTableBody');
+    var search = (document.getElementById('customerSearch').value || '').toLowerCase();
+    var customers = getCustomerList().filter(function(c) {
+        return !search || c.name.toLowerCase().indexOf(search) > -1 || c.email.toLowerCase().indexOf(search) > -1 || c.customerId.toLowerCase().indexOf(search) > -1;
+    });
+    if (customers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-400 py-8">Keine Kunden gefunden</td></tr>';
+        return;
+    }
+    tbody.innerHTML = customers.map(function(c) {
+        return '<tr onclick="openCustomerDetail(\'' + c.customerId + '\')">' +
+            '<td class="font-mono text-xs text-slate-500">' + c.customerId + '</td>' +
+            '<td class="font-medium">' + esc(c.name) + '</td>' +
+            '<td class="text-sm">' + esc(c.email) + '</td>' +
+            '<td class="text-sm">' + esc(c.phone || '–') + '</td>' +
+            '<td class="text-sm">' + esc(c.branche || '–') + '</td>' +
+            '<td class="text-center"><span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-xs">' + c.inquiryCount + '</span></td>' +
+        '</tr>';
+    }).join('');
+}
+
+function getCustomerList() {
+    var map = {};
+    crmData.inquiries.forEach(function(inq) {
+        if (!map[inq.customerId]) {
+            map[inq.customerId] = { customerId: inq.customerId, name: inq.name, email: inq.email, phone: inq.phone, branche: inq.branche, inquiryCount: 0 };
+        }
+        map[inq.customerId].inquiryCount++;
+    });
+    return Object.values(map);
+}
+
+// ==================== INVOICES ====================
+function renderInvoices() {
+    var tbody = document.getElementById('invoiceTableBody');
+    if (crmData.invoices.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-400 py-8">Noch keine Rechnungen vorhanden</td></tr>';
+        return;
+    }
+    tbody.innerHTML = crmData.invoices.slice().reverse().map(function(inv) {
+        return '<tr>' +
+            '<td class="font-mono text-xs">' + inv.number + '</td>' +
+            '<td class="font-medium">' + esc(inv.customerName) + '</td>' +
+            '<td class="font-semibold">' + inv.amount.toLocaleString('de-DE') + ' €</td>' +
+            '<td class="text-sm text-slate-500">' + formatDate(inv.createdAt) + '</td>' +
+            '<td>' + (inv.paid ? '<span class="badge badge-paid">Bezahlt</span>' : '<span class="badge badge-new">Offen</span>') + '</td>' +
+            '<td><button onclick="viewInvoice(\'' + inv.id + '\')" class="text-brand-500 hover:underline text-sm">Anzeigen</button> ' +
+            (!inv.paid ? '<button onclick="markInvoicePaid(\'' + inv.id + '\')" class="text-green-600 hover:underline text-sm ml-2">Bezahlt</button>' : '') +
+            '</td>' +
+        '</tr>';
+    }).join('');
+}
+
+// ==================== EMAILS ====================
+function renderEmails() {
+    var list = document.getElementById('emailList');
+    var emails = crmData.inquiries.slice().reverse();
+    if (emails.length === 0) {
+        list.innerHTML = '<div class="p-5 text-center text-slate-400">Noch keine E-Mails vorhanden</div>';
+        return;
+    }
+    list.innerHTML = emails.map(function(inq) {
+        return '<div class="p-4 hover:bg-slate-50 cursor-pointer flex items-start gap-4" onclick="openDetail(\'' + inq.id + '\')">' +
+            '<div class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-sm flex-shrink-0">' + inq.name.charAt(0).toUpperCase() + '</div>' +
+            '<div class="flex-1 min-w-0">' +
+                '<div class="flex justify-between items-start">' +
+                    '<span class="font-medium text-sm">' + esc(inq.name) + '</span>' +
+                    '<span class="text-xs text-slate-400 ml-2 flex-shrink-0">' + formatDate(inq.createdAt) + '</span>' +
+                '</div>' +
+                '<div class="text-sm text-slate-600 truncate">Website-Anfrage: ' + esc(inq.siteType || '–') + ' · ' + esc(inq.serviceModel || '–') + '</div>' +
+                '<div class="text-xs text-slate-400 truncate mt-0.5">' + esc(inq.message || 'Keine Nachricht') + '</div>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+// ==================== DETAIL MODAL ====================
+function openDetail(id) {
+    var inq = crmData.inquiries.find(function(i) { return i.id === id; });
+    if (!inq) return;
+    document.getElementById('modalTitle').textContent = 'Anfrage · ' + inq.customerId;
+
+    var statusOptions = ['neu', 'bearbeitung', 'abgeschlossen', 'bezahlt', 'abgenommen'];
+    var statusLabels = { neu:'Erhalten', bearbeitung:'In Bearbeitung', abgeschlossen:'Abgeschlossen', bezahlt:'Bezahlt', abgenommen:'Abgenommen' };
+
+    var priceHtml = '';
+    if (inq.totalPrice) {
+        priceHtml = '<div class="mb-4 p-4 bg-brand-50 border border-brand-200 rounded-lg">' +
+            '<div class="flex justify-between items-center"><span class="text-sm font-medium text-navy-900">Kalkulierter Preis</span><span class="text-lg font-bold text-brand-600">' + (inq.totalPrice || 0).toLocaleString('de-DE') + ' €</span></div>' +
+            (inq.basePrice ? '<div class="text-xs text-slate-500 mt-1">Grundpreis: ' + inq.basePrice + ' € · Features: ' + (inq.featurePrice || 0) + ' €</div>' : '') +
+        '</div>';
+    }
+
+    document.getElementById('modalContent').innerHTML =
+        (inq.source === 'konfigurator' ? '<div class="mb-4 inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Via Konfigurator</div>' : '') +
+        '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">' +
+            '<div><label class="text-xs text-slate-500">Name</label><div class="font-medium">' + esc(inq.name) + '</div></div>' +
+            '<div><label class="text-xs text-slate-500">E-Mail</label><div class="text-sm"><a href="mailto:' + esc(inq.email) + '" class="text-brand-500 hover:underline">' + esc(inq.email) + '</a></div></div>' +
+            '<div><label class="text-xs text-slate-500">Telefon</label><div class="text-sm">' + esc(inq.phone || '–') + '</div></div>' +
+            (inq.company ? '<div><label class="text-xs text-slate-500">Unternehmen</label><div class="text-sm">' + esc(inq.company) + '</div></div>' : '') +
+            '<div><label class="text-xs text-slate-500">Branche</label><div class="text-sm">' + esc(inq.branche || '–') + '</div></div>' +
+            '<div><label class="text-xs text-slate-500">Website-Typ</label><div class="text-sm">' + esc(inq.siteType || '–') + ' (' + (inq.pages || '?') + ' Seiten)</div></div>' +
+            '<div><label class="text-xs text-slate-500">Service-Modell</label><div class="text-sm">' + esc(inq.serviceModel || '–') + '</div></div>' +
+            (inq.design ? '<div><label class="text-xs text-slate-500">Designrichtung</label><div class="text-sm">' + esc(inq.design) + '</div></div>' : '') +
+        '</div>' +
+        priceHtml +
+        (inq.features ? '<div class="mb-4"><label class="text-xs text-slate-500">Features</label><div class="text-sm">' + esc(inq.features) + '</div></div>' : '') +
+        (inq.colors ? '<div class="mb-4"><label class="text-xs text-slate-500">Farbwünsche</label><div class="text-sm">' + esc(inq.colors) + '</div></div>' : '') +
+        (inq.existingUrl ? '<div class="mb-4"><label class="text-xs text-slate-500">Bestehende Website</label><div class="text-sm">' + esc(inq.existingUrl) + (inq.wantsRedesign ? ' (Redesign gewünscht)' : '') + '</div></div>' : '') +
+        (inq.message ? '<div class="mb-4"><label class="text-xs text-slate-500">Nachricht</label><div class="text-sm bg-slate-50 rounded-lg p-3">' + esc(inq.message) + '</div></div>' : '') +
+        (inq.summary ? '<div class="mb-4"><label class="text-xs text-slate-500">Vollständige Zusammenfassung</label><div class="text-sm bg-slate-50 rounded-lg p-3 whitespace-pre-line max-h-40 overflow-y-auto">' + esc(inq.summary) + '</div></div>' : '') +
+        '<div class="mb-6 border border-slate-200 rounded-xl overflow-hidden">' +
+            '<div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">' +
+                '<div class="flex items-center gap-2"><svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg><span class="text-sm font-semibold text-navy-900">Optionale Leistungen</span></div>' +
+                '<span class="text-xs text-slate-400">Extras zum Auftrag hinzufügen</span>' +
+            '</div>' +
+            '<div class="p-4 space-y-2" id="optionalServicesList">' +
+                buildOptionalServices(inq) +
+            '</div>' +
+            '<div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center gap-2">' +
+                '<input type="text" id="customServiceName" placeholder="Eigene Leistung…" class="flex-1 px-3 py-1.5 border border-slate-300 rounded-lg text-sm">' +
+                '<input type="number" id="customServicePrice" placeholder="Preis €" class="w-24 px-3 py-1.5 border border-slate-300 rounded-lg text-sm">' +
+                '<button onclick="addCustomService(\'' + inq.id + '\')" class="btn-primary text-xs px-3 py-1.5">Hinzufügen</button>' +
+            '</div>' +
+        '</div>' +
+                '<div class="mb-6"><label class="text-xs text-slate-500 block mb-1">Status ändern</label>' +
+            '<select id="statusSelect" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">' +
+                statusOptions.map(function(s) { return '<option value="' + s + '"' + (inq.status === s ? ' selected' : '') + '>' + statusLabels[s] + '</option>'; }).join('') +
+            '</select>' +
+            '<button onclick="updateInquiryStatus(\'' + inq.id + '\')" class="btn-primary ml-3 text-sm">Speichern</button>' +
+        '</div>' +
+        '<div class="border-t border-slate-100 pt-4 flex gap-3">' +
+            '<button onclick="createInvoiceFor(\'' + inq.id + '\')" class="btn-secondary text-sm">Rechnung erstellen</button>' +
+            '<button onclick="composeReply(\'' + inq.id + '\')" class="btn-primary text-sm">Antworten</button>' +
+            '<button onclick="deleteInquiry(\'' + inq.id + '\')" class="text-red-500 hover:underline text-sm ml-auto">Löschen</button>' +
+        '</div>';
+
+    document.getElementById('detailModal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('detailModal').classList.remove('active');
+}
+
+async function updateInquiryStatus(id) {
+    var newStatus = document.getElementById('statusSelect').value;
+    var res = await sb.from('inquiries').update({ status: newStatus, status_changed_at: new Date().toISOString() }).eq('id', id);
+    if (res.error) { alert('Fehler beim Status-Update: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    await refreshAll();
+    closeModal();
+}
+
+async function deleteInquiry(id) {
+    if (!confirm('Anfrage wirklich löschen?')) return;
+    var res = await sb.from('inquiries').delete().eq('id', id);
+    if (res.error) { alert('Fehler beim Löschen: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    await refreshAll();
+    closeModal();
+}
+
+// ==================== NEW INQUIRY ====================
+function openNewInquiry() {
+    document.getElementById('newInquiryModal').classList.add('active');
+}
+
+function closeNewInquiry() {
+    document.getElementById('newInquiryModal').classList.remove('active');
+}
+
+async function submitNewInquiry(e) {
+    e.preventDefault();
+
+    // Get next customer ID from Supabase
+    var idRes = await sb.rpc('next_id', { counter_name: 'customer_id' });
+    if (idRes.error) { alert('Fehler bei ID-Generierung: ' + (idRes.error.message || JSON.stringify(idRes.error))); return false; }
+    var custNum = idRes.data || Date.now();
+    var customerId = 'FC-' + custNum;
+
+    var res = await sb.from('inquiries').insert({
+        customer_id: customerId,
+        name: document.getElementById('inqName').value.trim(),
+        email: document.getElementById('inqEmail').value.trim(),
+        phone: document.getElementById('inqPhone').value.trim(),
+        branche: document.getElementById('inqBranche').value,
+        site_type: document.getElementById('inqType').value,
+        service_model: document.getElementById('inqService').value,
+        features: document.getElementById('inqFeatures').value.trim(),
+        message: document.getElementById('inqMessage').value.trim(),
+        status: 'neu',
+        source: 'manuell'
+    });
+    if (res.error) { alert('Fehler beim Speichern der Anfrage: ' + (res.error.message || JSON.stringify(res.error))); return false; }
+
+    await refreshAll();
+    closeNewInquiry();
+
+    // Reset form
+    ['inqName','inqEmail','inqPhone','inqFeatures','inqMessage'].forEach(function(id) { document.getElementById(id).value = ''; });
+    document.getElementById('inqBranche').selectedIndex = 0;
+    return false;
+}
+
+// ==================== COMPOSE REPLY ====================
+function composeReply(id) {
+    var inq = crmData.inquiries.find(function(i) { return i.id === id; });
+    if (!inq) return;
+    closeModal();
+
+    var subject = encodeURIComponent('Re: Website-Anfrage ' + inq.customerId);
+    var body = encodeURIComponent('Sehr geehrte/r ' + inq.name + ',\n\nvielen Dank für Ihre Anfrage.\n\n\n\nMit freundlichen Grüßen\nForest Code\ninfo@mominsys.de');
+    window.open('mailto:' + inq.email + '?subject=' + subject + '&body=' + body, '_blank');
+}
+
+// ==================== INVOICES ====================
+async function createInvoiceFor(inquiryId) {
+    var inq = crmData.inquiries.find(function(i) { return i.id === inquiryId; });
+    if (!inq) return;
+    closeModal();
+
+    // Use total price from inquiry if available, otherwise calculate
+    var amount = inq.totalPrice || 399;
+    if (!inq.totalPrice) {
+        if (inq.siteType === 'onepager') amount = 249;
+        else if (inq.siteType === 'premium') amount = 599;
+    }
+
+    var idRes = await sb.rpc('next_id', { counter_name: 'invoice_id' });
+    if (idRes.error) { alert('Fehler bei Rechnungsnummer-Generierung: ' + (idRes.error.message || JSON.stringify(idRes.error))); return; }
+    var invNum = idRes.data || Date.now();
+    var invNumber = 'FC-R-' + String(invNum).padStart(4, '0');
+
+    // Build detailed invoice items
+    var items = [];
+    var model = inq.serviceModel || 'basic';
+    var modelLabel = model === 'pro' ? 'Pro' : model === 'max' ? 'Max' : 'Einmalzahlung';
+    items.push({ desc: 'Website-Erstellung (' + modelLabel + ')', amount: amount });
+
+    if (model === 'pro') {
+        items.push({ desc: 'Service-Modell Pro, monatliche Abrechnung', amount: 45, note: 'Monatlich' });
+    } else if (model === 'max') {
+        items.push({ desc: 'Service-Modell Max, monatliche Abrechnung', amount: 70, note: 'Monatlich' });
+    } else {
+        items.push({ desc: 'Service-Modell Einmalzahlung', amount: 0, note: 'Keine laufenden Kosten' });
+    }
+
+    if (inq.features) {
+        var featureList = typeof inq.features === 'string' ? inq.features : '';
+        if (featureList) {
+            var featTotal = inq.featurePrice || 0;
+            items.push({ desc: 'Gebuchte Features: ' + featureList, amount: featTotal, note: 'Im Paket enthalten' });
+        }
+    }
+
+    var res = await sb.from('invoices').insert({
+        number: invNumber,
+        inquiry_id: inquiryId,
+        customer_id: inq.customerId,
+        customer_name: inq.name,
+        customer_email: inq.email,
+        amount: amount,
+        items: items,
+        paid: false
+    }).select().single();
+    if (res.error) { alert('Fehler beim Erstellen der Rechnung: ' + (res.error.message || JSON.stringify(res.error))); return; }
+
+    await loadInvoices();
+    switchView('invoices');
+    renderInvoices();
+    if (res.data) viewInvoice(res.data.id);
+}
+
+function openNewInvoice() {
+    // Simple: open the new inquiry modal as a starting point
+    alert('Bitte erstelle zuerst eine Anfrage, dann kannst du aus der Anfrage heraus eine Rechnung erzeugen.');
+}
+
+async function markInvoicePaid(id) {
+    var inv = crmData.invoices.find(function(i) { return i.id === id; });
+    if (inv) {
+        var res = await sb.from('invoices').update({ paid: true }).eq('id', id);
+        if (res.error) { alert('Fehler beim Bezahlt-Markieren: ' + (res.error.message || JSON.stringify(res.error))); return; }
+        // Also update inquiry status
+        if (inv.inquiryId) {
+            var res2 = await sb.from('inquiries').update({ status: 'bezahlt', status_changed_at: new Date().toISOString() }).eq('id', inv.inquiryId);
+            if (res2.error) { console.error('Fehler beim Status-Update der Anfrage:', res2.error); }
+        }
+        await refreshAll();
+        renderInvoices();
+    }
+}
+
+function viewInvoice(id) {
+    var inv = crmData.invoices.find(function(i) { return i.id === id; });
+    if (!inv) return;
+
+    var today = new Date(inv.createdAt);
+    var due = new Date(today); due.setDate(due.getDate() + 14);
+    var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+    var verwendungszweck = inv.customerId + ' / ' + months[today.getMonth()] + ' ' + today.getFullYear();
+
+    document.getElementById('invoiceModalContent').innerHTML =
+        '<div id="invoicePrintArea" class="invoice-preview" style="position:relative;min-height:900px;display:flex;flex-direction:column;padding:0;overflow:hidden;">' +
+            '<div style="background:linear-gradient(135deg,#0b1121 0%,#1e3a5f 60%,#2563eb 100%);padding:28px 32px 20px 32px;border-radius:0 0 12px 12px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">' +
+                '<div>' +
+                    '<img src="data:image/png;base64,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" alt="Forest Code" style="height:60px;width:auto;display:block;">' +
+                '</div>' +
+                '<div style="text-align:right;">' +
+                    '<div style="font-size:24px;font-weight:700;color:#cbd5e1;">RECHNUNG</div>' +
+                    '<div style="font-size:13px;color:#94a3b8;margin-top:4px;">' + inv.number + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div style="font-size:11px;color:#94a3b8;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:8px;">' +
+                'mominSys UG (haftungsbeschränkt) · Hammerwerkstr. 1 A · 79183 Waldkirch' +
+            '</div>' +
+            '</div>' +
+            '<div style="padding:24px 32px;flex:1;">' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:32px;">' +
+                '<div>' +
+                    '<div style="font-size:14px;line-height:1.7;">' +
+                        '<strong>' + esc(inv.customerName) + '</strong><br>' +
+                        esc(inv.customerEmail) + '<br>' +
+                        'Kunden-Nr.: ' + inv.customerId +
+                    '</div>' +
+                '</div>' +
+                '<div style="text-align:right;font-size:13px;color:#64748b;line-height:1.8;">' +
+                    '<div><strong style="color:#1e293b;">Rechnungsdatum:</strong> ' + formatDate(inv.createdAt) + '</div>' +
+                    '<div><strong style="color:#1e293b;">Fällig bis:</strong> ' + formatDate(due.toISOString()) + '</div>' +
+                    '<div><strong style="color:#1e293b;">Kunden-Nr.:</strong> ' + inv.customerId + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div style="margin-bottom:24px;">' +
+                '<div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Leistungsbeschreibung</div>' +
+                '<div style="font-size:13px;color:#475569;line-height:1.6;background:#f8fafc;border-radius:8px;padding:12px 16px;">' +
+                    'Erstellung einer professionellen Website gemäß den vereinbarten Spezifikationen. ' +
+                    'Die Leistung umfasst Konzeption, Design, Entwicklung und Bereitstellung der Website.' +
+                '</div>' +
+            '</div>' +
+            '<table style="width:100%;border-collapse:collapse;margin-bottom:24px;">' +
+                '<thead><tr style="border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 12px;font-size:11px;color:#64748b;text-transform:uppercase;">Pos.</th><th style="text-align:left;padding:8px 12px;font-size:11px;color:#64748b;text-transform:uppercase;">Beschreibung</th><th style="text-align:right;padding:8px 12px;font-size:11px;color:#64748b;text-transform:uppercase;">Betrag</th></tr></thead>' +
+                '<tbody>' +
+                    inv.items.map(function(item, idx) {
+                        return '<tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:10px 12px;font-size:13px;color:#94a3b8;">' + (idx + 1) + '</td><td style="padding:10px 12px;font-size:13px;">' + esc(item.desc) + (item.note ? ' <span style="color:#94a3b8;font-style:italic;">('+esc(item.note)+')</span>' : '') + '</td><td style="padding:10px 12px;font-size:13px;text-align:right;">' + (item.amount > 0 ? item.amount.toLocaleString('de-DE') + ' €' : '–') + '</td></tr>';
+                    }).join('') +
+                '</tbody>' +
+                '<tfoot>' +
+                    '<tr style="border-top:2px solid #0b1121;"><td></td><td style="padding:12px;font-weight:700;">Gesamtbetrag (netto)</td><td style="padding:12px;font-weight:700;text-align:right;font-size:16px;">' + inv.items.reduce(function(s, it) { return s + (it.amount || 0); }, 0).toLocaleString('de-DE') + ' €</td></tr>' +
+                '</tfoot>' +
+            '</table>' +
+            '<div style="font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px;margin-bottom:16px;line-height:1.6;">' +
+                'Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung).<br>' +
+                'Zahlbar innerhalb von 14 Tagen nach Rechnungsdatum.<br>' +
+                'Es gelten unsere Allgemeinen Geschäftsbedingungen (AGB). Der Auftraggeber hat nach Lieferung 5 Werktage Zeit für die Abnahme. Nach Ablauf dieser Frist gilt der Auftrag als abgenommen.' +
+            '</div>' +
+            '</div>' +
+            '<div style="background:linear-gradient(135deg,#0b1121 0%,#1e3a5f 60%,#2563eb 100%);padding:20px 32px 16px 32px;border-radius:12px 12px 0 0;margin-top:auto;">' +
+            '<div style="border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">' +
+                '<div style="font-weight:700;color:#e2e8f0;margin-bottom:4px;">Zahlungsinformationen</div>' +
+                '<div style="color:#cbd5e1;">Empfänger: mominSys UG (haftungsbeschränkt)</div>' +
+                '<div style="color:#cbd5e1;">IBAN: DE 5241 0300 0432 2355</div>' +
+                '<div style="color:#cbd5e1;">BIC: PBNKDEFFXXX</div>' +
+                '<div style="color:#cbd5e1;">Bank: Postbank</div>' +
+                '<div style="color:#ffffff;font-weight:600;margin-top:4px;">Verwendungszweck: ' + verwendungszweck + '</div>' +
+            '</div>' +
+            '<div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:10px;color:#94a3b8;line-height:1.6;">' +
+                '<div>' +
+                    '<strong style="color:#cbd5e1;">mominSys UG (haftungsbeschr.)</strong><br>' +
+                    'Hammerwerkstr. 1 A<br>' +
+                    '79183 Waldkirch<br>' +
+                    'info@mominsys.de' +
+                '</div>' +
+                '<div>' +
+                    '<strong style="color:#cbd5e1;">Registergericht</strong><br>' +
+                    'Amtsgericht Freiburg<br>' +
+                    'HRB 725099<br>' +
+                    'GF: Musawar Momin' +
+                '</div>' +
+                '<div>' +
+                    '<strong style="color:#cbd5e1;">Bankverbindung</strong><br>' +
+                    'Postbank<br>' +
+                    'IBAN: DE 5241 0300 0432 2355<br>' +
+                    'BIC: PBNKDEFFXXX' +
+                '</div>' +
+            '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="flex gap-3 mt-6 justify-end">' +
+            '<button onclick="printInvoice()" class="btn-secondary text-sm">🖨️ Drucken / PDF</button>' +
+            '<button onclick="closeInvoiceModal()" class="btn-primary text-sm">Schließen</button>' +
+        '</div>';
+
+    document.getElementById('invoiceModal').classList.add('active');
+}
+
+function closeInvoiceModal() {
+    document.getElementById('invoiceModal').classList.remove('active');
+}
+
+function printInvoice() {
+    var content = document.getElementById('invoicePrintArea').innerHTML;
+    var win = window.open('', '_blank');
+    win.document.write('<!DOCTYPE html><html><head><title>Rechnung</title><style>body{font-family:Inter,system-ui,sans-serif;color:#1e293b;padding:30px 40px;max-width:800px;margin:auto}table{width:100%;border-collapse:collapse}th,td{padding:8px 12px;text-align:left}@media print{body{padding:20px}}</style></head><body>' + content + '</body></html>');
+    win.document.close();
+    setTimeout(function() { win.print(); }, 500);
+}
+
+
+// ==================== CONTRACTS ====================
+function renderContracts() {
+    var tbody = document.getElementById('contractTableBody');
+    // Contracts are generated from inquiries that have status 'abgeschlossen', 'bezahlt', or 'abgenommen'
+    var contractInquiries = crmData.inquiries.filter(function(inq) {
+        return ['abgeschlossen', 'bezahlt', 'abgenommen'].indexOf(inq.status) !== -1;
+    });
+    if (contractInquiries.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-400 py-8">Noch keine Verträge vorhanden</td></tr>';
+        return;
+    }
+    tbody.innerHTML = contractInquiries.slice().reverse().map(function(inq) {
+        var statusBadge = '';
+        if (inq.status === 'abgenommen') statusBadge = '<span class="badge badge-paid">Abgenommen</span>';
+        else if (inq.status === 'bezahlt') statusBadge = '<span class="badge badge-paid">Bezahlt</span>';
+        else statusBadge = '<span class="badge badge-progress">Abgeschlossen</span>';
+        var contractNr = 'V-' + inq.customerId;
+        return '<tr>' +
+            '<td class="font-mono text-xs">' + contractNr + '</td>' +
+            '<td class="font-medium">' + esc(inq.name) + '</td>' +
+            '<td class="font-semibold">' + (inq.totalPrice ? inq.totalPrice.toLocaleString('de-DE') + ' €' : '–') + '</td>' +
+            '<td class="text-sm text-slate-500">' + formatDate(inq.createdAt) + '</td>' +
+            '<td>' + statusBadge + '</td>' +
+            '<td><button onclick="viewContract(\'' + inq.id + '\')" class="text-brand-500 hover:underline text-sm">Anzeigen</button></td>' +
+        '</tr>';
+    }).join('');
+}
+
+function viewContract(id) {
+    var inq = crmData.inquiries.find(function(i) { return i.id === id; });
+    if (!inq) return;
+
+    var contractDate = new Date(inq.createdAt);
+    var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+    var contractNr = 'V-' + inq.customerId;
+    var dueDate = new Date(contractDate); dueDate.setDate(dueDate.getDate() + 14);
+
+    // Build line items from inquiry
+    var items = [];
+    if (inq.siteType) items.push({ desc: 'Website-Erstellung: ' + inq.siteType + (inq.pages ? ' (' + inq.pages + ' Seiten)' : ''), amount: inq.basePrice || 0 });
+    if (inq.serviceModel) items.push({ desc: 'Service-Modell: ' + inq.serviceModel, amount: 0, note: 'inkl. Grundpreis' });
+    if (inq.features) {
+        var feats = inq.features.split(',');
+        feats.forEach(function(f) {
+            f = f.trim();
+            if (f) items.push({ desc: f, amount: 0, note: 'Feature' });
+        });
+    }
+    if (inq.featurePrice && inq.featurePrice > 0) items.push({ desc: 'Feature-Zuschlag', amount: inq.featurePrice });
+    if (items.length === 0) items.push({ desc: 'Website-Erstellung gemäß Vereinbarung', amount: inq.totalPrice || 0 });
+
+    var totalAmount = inq.totalPrice || items.reduce(function(s, it) { return s + (it.amount || 0); }, 0);
+
+    document.getElementById('contractModalContent').innerHTML =
+        '<div id="contractPrintArea" class="invoice-preview" style="position:relative;min-height:900px;display:flex;flex-direction:column;padding:0;overflow:hidden;">' +
+            '<div style="background:linear-gradient(135deg,#0b1121 0%,#1e3a5f 60%,#2563eb 100%);padding:28px 32px 20px 32px;border-radius:0 0 12px 12px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">' +
+                '<div>' +
+                    '<img src="' + document.querySelector('#sidebar img').src + '" alt="Forest Code" style="height:60px;width:auto;display:block;">' +
+                '</div>' +
+                '<div style="text-align:right;">' +
+                    '<div style="font-size:24px;font-weight:700;color:#cbd5e1;">VERTRAG</div>' +
+                    '<div style="font-size:13px;color:#94a3b8;margin-top:4px;">' + contractNr + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div style="font-size:11px;color:#94a3b8;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:8px;">' +
+                'mominSys UG (haftungsbeschränkt) · Hammerwerkstr. 1 A · 79183 Waldkirch' +
+            '</div>' +
+            '</div>' +
+            '<div style="padding:24px 32px;flex:1;">' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:24px;">' +
+                '<div>' +
+                    '<div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Auftraggeber</div>' +
+                    '<div style="font-size:14px;line-height:1.7;">' +
+                        '<strong>' + esc(inq.name) + '</strong><br>' +
+                        esc(inq.email) + '<br>' +
+                        (inq.phone ? esc(inq.phone) + '<br>' : '') +
+                        (inq.company ? esc(inq.company) + '<br>' : '') +
+                        'Kunden-Nr.: ' + inq.customerId +
+                    '</div>' +
+                '</div>' +
+                '<div style="text-align:right;font-size:13px;color:#64748b;line-height:1.8;">' +
+                    '<div><strong style="color:#1e293b;">Vertragsdatum:</strong> ' + formatDate(inq.createdAt) + '</div>' +
+                    '<div><strong style="color:#1e293b;">Kunden-Nr.:</strong> ' + inq.customerId + '</div>' +
+                    (inq.branche ? '<div><strong style="color:#1e293b;">Branche:</strong> ' + esc(inq.branche) + '</div>' : '') +
+                    (inq.design ? '<div><strong style="color:#1e293b;">Designrichtung:</strong> ' + esc(inq.design) + '</div>' : '') +
+                '</div>' +
+            '</div>' +
+            '<div style="margin-bottom:20px;">' +
+                '<div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Vertragsgegenstand</div>' +
+                '<div style="font-size:13px;color:#475569;line-height:1.6;background:#f8fafc;border-radius:8px;padding:12px 16px;">' +
+                    'Zwischen mominSys UG (haftungsbeschränkt), Handelsname Forest Code (Auftragnehmer), und ' + esc(inq.name) + ' (Auftraggeber) wird folgender Vertrag über die Erstellung einer Website geschlossen.' +
+                '</div>' +
+            '</div>' +
+            '<table style="width:100%;border-collapse:collapse;margin-bottom:20px;">' +
+                '<thead><tr style="border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 12px;font-size:11px;color:#64748b;text-transform:uppercase;">Pos.</th><th style="text-align:left;padding:8px 12px;font-size:11px;color:#64748b;text-transform:uppercase;">Leistung</th><th style="text-align:right;padding:8px 12px;font-size:11px;color:#64748b;text-transform:uppercase;">Betrag</th></tr></thead>' +
+                '<tbody>' +
+                    items.map(function(item, idx) {
+                        return '<tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:10px 12px;font-size:13px;color:#94a3b8;">' + (idx + 1) + '</td><td style="padding:10px 12px;font-size:13px;">' + esc(item.desc) + (item.note ? ' <span style="color:#94a3b8;font-style:italic;">('+esc(item.note)+')</span>' : '') + '</td><td style="padding:10px 12px;font-size:13px;text-align:right;">' + (item.amount > 0 ? item.amount.toLocaleString('de-DE') + ' \u20ac' : '\u2013') + '</td></tr>';
+                    }).join('') +
+                '</tbody>' +
+                '<tfoot>' +
+                    '<tr style="border-top:2px solid #0b1121;"><td></td><td style="padding:12px;font-weight:700;">Gesamtbetrag (netto)</td><td style="padding:12px;font-weight:700;text-align:right;font-size:16px;">' + totalAmount.toLocaleString('de-DE') + ' \u20ac</td></tr>' +
+                '</tfoot>' +
+            '</table>' +
+            '<div style="font-size:11px;color:#64748b;line-height:1.7;margin-bottom:16px;">' +
+                '<strong style="color:#1e293b;">Vertragsbedingungen:</strong><br>' +
+                '1. Es gelten die Allgemeinen Geschäftsbedingungen (AGB) der mominSys UG (haftungsbeschränkt).<br>' +
+                '2. Die Zahlung ist innerhalb von 14 Tagen nach Rechnungsstellung fällig.<br>' +
+                '3. Der Auftraggeber hat nach Fertigstellung 5 Werktage Zeit für die Abnahme. Erfolgt innerhalb dieser Frist keine Rückmeldung, gilt die Leistung als abgenommen.<br>' +
+                '4. Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung).<br>' +
+                '5. Gerichtsstand ist Waldkirch.' +
+            '</div>' +
+            '</div>' +
+            '<div style="background:linear-gradient(135deg,#0b1121 0%,#1e3a5f 60%,#2563eb 100%);padding:20px 32px 16px 32px;border-radius:12px 12px 0 0;margin-top:auto;">' +
+            '<div style="border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">' +
+                '<div style="font-weight:700;color:#e2e8f0;margin-bottom:4px;">Zahlungsinformationen</div>' +
+                '<div style="color:#cbd5e1;">Empfänger: mominSys UG (haftungsbeschränkt)</div>' +
+                '<div style="color:#cbd5e1;">IBAN: DE 5241 0300 0432 2355</div>' +
+                '<div style="color:#cbd5e1;">BIC: PBNKDEFFXXX</div>' +
+                '<div style="color:#cbd5e1;">Bank: Postbank</div>' +
+            '</div>' +
+            '<div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:10px;color:#94a3b8;line-height:1.6;">' +
+                '<div>' +
+                    '<strong style="color:#cbd5e1;">mominSys UG (haftungsbeschr.)</strong><br>' +
+                    'Hammerwerkstr. 1 A<br>' +
+                    '79183 Waldkirch<br>' +
+                    'info@mominsys.de' +
+                '</div>' +
+                '<div>' +
+                    '<strong style="color:#cbd5e1;">Registergericht</strong><br>' +
+                    'Amtsgericht Freiburg<br>' +
+                    'HRB 725099<br>' +
+                    'GF: Musawar Momin' +
+                '</div>' +
+                '<div>' +
+                    '<strong style="color:#cbd5e1;">Bankverbindung</strong><br>' +
+                    'Postbank<br>' +
+                    'IBAN: DE 5241 0300 0432 2355<br>' +
+                    'BIC: PBNKDEFFXXX' +
+                '</div>' +
+            '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="flex gap-3 mt-6 justify-end">' +
+            '<button onclick="printContract()" class="btn-secondary text-sm">\ud83d\udda8\ufe0f Drucken / PDF</button>' +
+            '<button onclick="closeContractModal()" class="btn-primary text-sm">Schließen</button>' +
+        '</div>';
+
+    document.getElementById('contractModal').classList.add('active');
+}
+
+function closeContractModal() {
+    document.getElementById('contractModal').classList.remove('active');
+}
+
+function printContract() {
+    var content = document.getElementById('contractPrintArea').innerHTML;
+    var win = window.open('', '_blank');
+    win.document.write('<!DOCTYPE html><html><head><title>Vertrag</title><style>body{font-family:Inter,system-ui,sans-serif;color:#1e293b;padding:30px 40px;max-width:800px;margin:auto}table{width:100%;border-collapse:collapse}th,td{padding:8px 12px;text-align:left}@media print{body{padding:20px}}</style></head><body>' + content + '</body></html>');
+    win.document.close();
+    setTimeout(function() { win.print(); }, 500);
+}
+
+// ==================== OPTIONAL SERVICES ====================
+var predefinedServices = [
+    { name: 'SEO-Optimierung', price: 299, desc: 'On-Page SEO, Meta-Tags, Sitemap' },
+    { name: 'Cookie-Banner / DSGVO', price: 149, desc: 'Rechtskonforme Cookie-Lösung' },
+    { name: 'Kontaktformular', price: 99, desc: 'Individuelles Formular mit E-Mail-Versand' },
+    { name: 'Google Maps Integration', price: 79, desc: 'Eingebettete Standortkarte' },
+    { name: 'Social Media Integration', price: 99, desc: 'Social Links, Feeds, Share-Buttons' },
+    { name: 'Blog / News-Bereich', price: 249, desc: 'CMS-fähiger Blog mit Kategorien' },
+    { name: 'Mehrsprachigkeit', price: 349, desc: 'Sprachumschaltung (DE/EN)' },
+    { name: 'SSL-Zertifikat & Hosting', price: 0, desc: 'Im Paket enthalten', included: true },
+    { name: 'Logo-Design', price: 199, desc: 'Professionelles Logodesign' },
+    { name: 'Wartungspaket (6 Monate)', price: 399, desc: 'Updates, Backups, Support' }
+];
+
+function buildOptionalServices(inq) {
+    var selected = inq.optionalServices ? JSON.parse(inq.optionalServices) : [];
+    var selectedNames = selected.map(function(s) { return s.name; });
+
+    var html = predefinedServices.map(function(svc) {
+        var isChecked = selectedNames.indexOf(svc.name) !== -1;
+        var checkedAttr = isChecked ? ' checked' : '';
+        var priceLabel = svc.included ? '<span class="text-green-600 text-xs font-medium">Inklusive</span>' : '<span class="text-xs font-semibold text-navy-900">' + svc.price.toLocaleString('de-DE') + ' €</span>';
+        return '<label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 cursor-pointer">' +
+            '<input type="checkbox" class="opt-service-check accent-brand-500 w-4 h-4" data-name="' + svc.name + '" data-price="' + svc.price + '"' + checkedAttr + '>' +
+            '<div class="flex-1"><div class="text-sm font-medium text-navy-900">' + svc.name + '</div><div class="text-xs text-slate-400">' + svc.desc + '</div></div>' +
+            priceLabel +
+        '</label>';
+    }).join('');
+
+    // Show custom services added by user
+    selected.forEach(function(s) {
+        var isPredefined = predefinedServices.some(function(p) { return p.name === s.name; });
+        if (!isPredefined) {
+            html += '<label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 cursor-pointer">' +
+                '<input type="checkbox" class="opt-service-check accent-brand-500 w-4 h-4" data-name="' + s.name + '" data-price="' + s.price + '" checked>' +
+                '<div class="flex-1"><div class="text-sm font-medium text-navy-900">' + esc(s.name) + '</div><div class="text-xs text-slate-400">Eigene Leistung</div></div>' +
+                '<span class="text-xs font-semibold text-navy-900">' + (s.price || 0).toLocaleString('de-DE') + ' €</span>' +
+            '</label>';
+        }
+    });
+
+    html += '<div class="flex justify-end pt-2 border-t border-slate-100 mt-2">' +
+        '<button onclick="saveOptionalServices(\'' + inq.id + '\')" class="btn-primary text-xs px-4 py-1.5">Auswahl speichern</button>' +
+    '</div>';
+
+    return html;
+}
+
+async function saveOptionalServices(inqId) {
+    var checks = document.querySelectorAll('#optionalServicesList .opt-service-check:checked');
+    var selected = [];
+    checks.forEach(function(cb) {
+        selected.push({ name: cb.dataset.name, price: parseFloat(cb.dataset.price) || 0 });
+    });
+    var res = await sb.from('inquiries').update({ optional_services: JSON.stringify(selected) }).eq('id', inqId);
+    if (res.error) { alert('Fehler beim Speichern: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    // Update local data
+    var inq = crmData.inquiries.find(function(i) { return i.id === inqId; });
+    if (inq) inq.optionalServices = JSON.stringify(selected);
+    // Brief success feedback
+    var btn = event.target;
+    var origText = btn.textContent;
+    btn.textContent = '✓ Gespeichert';
+    btn.classList.add('bg-green-600');
+    setTimeout(function() { btn.textContent = origText; btn.classList.remove('bg-green-600'); }, 1500);
+}
+
+async function addCustomService(inqId) {
+    var nameInput = document.getElementById('customServiceName');
+    var priceInput = document.getElementById('customServicePrice');
+    var name = nameInput.value.trim();
+    var price = parseFloat(priceInput.value) || 0;
+    if (!name) { nameInput.focus(); return; }
+
+    // Add checkbox to list
+    var listEl = document.getElementById('optionalServicesList');
+    var saveBtn = listEl.querySelector('.border-t');
+    var newLabel = document.createElement('label');
+    newLabel.className = 'flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 cursor-pointer';
+    newLabel.innerHTML = '<input type="checkbox" class="opt-service-check accent-brand-500 w-4 h-4" data-name="' + esc(name) + '" data-price="' + price + '" checked>' +
+        '<div class="flex-1"><div class="text-sm font-medium text-navy-900">' + esc(name) + '</div><div class="text-xs text-slate-400">Eigene Leistung</div></div>' +
+        '<span class="text-xs font-semibold text-navy-900">' + price.toLocaleString('de-DE') + ' €</span>';
+    listEl.insertBefore(newLabel, saveBtn);
+
+    nameInput.value = '';
+    priceInput.value = '';
+}
+
+// ==================== CUSTOMER DETAIL ====================
+function openCustomerDetail(customerId) {
+    var inqs = crmData.inquiries.filter(function(i) { return i.customerId === customerId; });
+    if (inqs.length === 0) return;
+    var c = inqs[0];
+    var invs = crmData.invoices.filter(function(inv) { return inv.customerId === customerId; });
+
+    document.getElementById('modalTitle').textContent = 'Kunde · ' + customerId;
+    document.getElementById('modalContent').innerHTML =
+        '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">' +
+            '<div><label class="text-xs text-slate-500">Name</label><div class="font-medium">' + esc(c.name) + '</div></div>' +
+            '<div><label class="text-xs text-slate-500">E-Mail</label><div class="text-sm">' + esc(c.email) + '</div></div>' +
+            '<div><label class="text-xs text-slate-500">Telefon</label><div class="text-sm">' + esc(c.phone || '–') + '</div></div>' +
+            '<div><label class="text-xs text-slate-500">Branche</label><div class="text-sm">' + esc(c.branche || '–') + '</div></div>' +
+        '</div>' +
+        '<h3 class="font-heading font-bold text-navy-900 mb-3">Anfragen (' + inqs.length + ')</h3>' +
+        '<div class="space-y-2 mb-4">' +
+            inqs.map(function(inq) {
+                return '<div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100" onclick="closeModal();setTimeout(function(){openDetail(\'' + inq.id + '\')},200)">' +
+                    '<span class="text-sm">' + esc(inq.siteType || '–') + ' · ' + esc(inq.serviceModel || '–') + '</span>' +
+                    statusBadge(inq.status) +
+                '</div>';
+            }).join('') +
+        '</div>' +
+        (invs.length > 0 ? '<h3 class="font-heading font-bold text-navy-900 mb-3">Rechnungen (' + invs.length + ')</h3>' +
+            '<div class="space-y-2">' +
+                invs.map(function(inv) {
+                    return '<div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">' +
+                        '<span class="text-sm font-mono">' + inv.number + '</span>' +
+                        '<span class="font-semibold text-sm">' + inv.amount.toLocaleString('de-DE') + ' €</span>' +
+                        (inv.paid ? '<span class="badge badge-paid">Bezahlt</span>' : '<span class="badge badge-new">Offen</span>') +
+                    '</div>';
+                }).join('') +
+            '</div>' : '') ;
+
+    document.getElementById('detailModal').classList.add('active');
+}
+
+// ==================== HELPER FUNCTIONS ====================
+function esc(str) {
+    var div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+}
+
+function statusBadge(status) {
+    var map = { neu:'badge-new', bearbeitung:'badge-progress', abgeschlossen:'badge-done', bezahlt:'badge-paid', abgenommen:'badge-accepted' };
+    var labels = { neu:'Erhalten', bearbeitung:'In Bearbeitung', abgeschlossen:'Abgeschlossen', bezahlt:'Bezahlt', abgenommen:'Abgenommen' };
+    return '<span class="badge ' + (map[status] || 'badge-new') + '">' + (labels[status] || status) + '</span>';
+}
+
+function formatDate(iso) {
+    if (!iso) return '–';
+    var d = new Date(iso);
+    return d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+function generateId() {
+    return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+}
+
+// ==================== REALTIME SUBSCRIPTION ====================
+// Listen for new inquiries in real-time
+sb.channel('inquiries-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'inquiries' }, function(payload) {
+        console.log('Realtime update:', payload);
+        refreshAll();
+    })
+    .subscribe();
+</script>
+
+</body>
+</html>
