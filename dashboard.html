@@ -984,8 +984,20 @@ function closeModal() {
 
 async function updateInquiryStatus(id) {
     var newStatus = document.getElementById('statusSelect').value;
+    var inq = crmData.inquiries.find(function(i) { return i.id === id; });
+    var oldStatus = inq ? inq.status : '';
     var res = await sb.from('inquiries').update({ status: newStatus, status_changed_at: new Date().toISOString() }).eq('id', id);
     if (res.error) { alert('Fehler beim Status-Update: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    // Send status update email to customer via Brevo
+    if (inq && inq.email && newStatus !== oldStatus) {
+        fetch('/.netlify/functions/status-update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: inq.name, email: inq.email, status: newStatus, customerId: inq.customerId })
+        })
+        .then(function(r) { if (r.ok) console.log('Status-Email gesendet an ' + inq.email); else console.warn('Status-Email fehlgeschlagen'); })
+        .catch(function(err) { console.warn('Status-Email Fehler:', err); });
+    }
     await refreshAll();
     closeModal();
 }
