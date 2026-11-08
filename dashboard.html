@@ -318,7 +318,10 @@
                 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
                     <div class="p-5 border-b border-slate-100 flex items-center justify-between">
                         <h2 class="font-heading font-bold text-navy-900">Rechnungen</h2>
-                        <button onclick="openNewInvoice()" class="btn-primary text-sm">+ Neue Rechnung</button>
+                        <div class="flex items-center gap-3">
+                            <input type="text" id="invoiceSearch" oninput="renderInvoices()" placeholder="Suche nach Kunden-Nr. oder Name…" class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <button onclick="openNewInvoice()" class="btn-primary text-sm">+ Neue Rechnung</button>
+                        </div>
                     </div>
                     <table class="data-table">
                         <thead>
@@ -343,20 +346,23 @@
                 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
                     <div class="p-5 border-b border-slate-100 flex items-center justify-between">
                         <h2 class="font-heading font-bold text-navy-900">Verträge</h2>
+                        <input type="text" id="contractSearch" oninput="renderContracts()" placeholder="Suche nach Kunden-Nr. oder Name…" class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
                     <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Vertrag-Nr.</th>
                                 <th>Kunde</th>
+                                <th>Service-Modell</th>
+                                <th>Monatl. Kosten</th>
                                 <th>Betrag</th>
-                                <th>Datum</th>
+                                <th>Laufzeit</th>
                                 <th>Status</th>
                                 <th>Aktion</th>
                             </tr>
                         </thead>
                         <tbody id="contractTableBody">
-                            <tr><td colspan="6" class="text-center text-slate-400 py-8">Noch keine Verträge vorhanden</td></tr>
+                            <tr><td colspan="8" class="text-center text-slate-400 py-8">Noch keine Verträge vorhanden</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -367,7 +373,7 @@
                 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
                     <div class="p-5 border-b border-slate-100">
                         <h2 class="font-heading font-bold text-navy-900">E-Mail Posteingang</h2>
-                        <p class="text-sm text-slate-500 mt-1">Anfragen von info@mominsys.de</p>
+                        <p class="text-sm text-slate-500 mt-1">Anfragen von info.forestcode@gmail.com</p>
                     </div>
                     <div id="emailList" class="divide-y divide-slate-100">
                         <div class="p-5 text-center text-slate-400">Noch keine E-Mails vorhanden</div>
@@ -483,7 +489,7 @@
                 <p class="font-semibold text-navy-900">Hinweis zur Datenverarbeitung</p>
                 <p class="mt-1">Durch die Nutzung der Dienste von Forest Code (mominSys UG, haftungsbeschränkt) erklären Sie sich damit einverstanden, dass Ihre personenbezogenen Daten im Rahmen der Auftragsbearbeitung verarbeitet werden. Ihre Daten werden ausschließlich zur Erbringung der vereinbarten Leistungen verwendet und nicht an Dritte weitergegeben, es sei denn, dies ist zur Vertragserfüllung zwingend erforderlich.</p>
             </div>
-            <p><strong>mominSys UG (haftungsbeschränkt)</strong><br>Handelsname: Forest Code<br>Hammerwerkstr. 1 A, 79183 Waldkirch<br>E-Mail: info@mominsys.de<br>Amtsgericht Freiburg, HRB 725099<br>Geschäftsführer: Musawar Khawaja</p>
+            <p><strong>mominSys UG (haftungsbeschränkt)</strong><br>Handelsname: Forest Code<br>Hammerwerkstr. 1 A, 79183 Waldkirch<br>E-Mail: info.forestcode@gmail.com<br>Amtsgericht Freiburg, HRB 725099<br>Geschäftsführer: Musawar Khawaja</p>
             <h3 class="font-bold text-navy-900 text-base mt-6">§ 1 Geltungsbereich</h3>
             <p>(1) Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge zwischen mominSys UG (haftungsbeschränkt), Handelsname Forest Code (nachfolgend „Auftragnehmer"), und dem Kunden (nachfolgend „Auftraggeber") über die Erstellung, Gestaltung und Pflege von Websites sowie damit verbundene digitale Dienstleistungen.</p>
             <p>(2) Abweichende Geschäftsbedingungen des Auftraggebers werden nicht anerkannt, es sei denn, der Auftragnehmer stimmt ihrer Geltung ausdrücklich schriftlich zu.</p>
@@ -513,7 +519,10 @@
             <p>(2) Das Urheberrecht an den erstellten Werken verbleibt beim Auftragnehmer. Quellcodes, Entwürfe und Konzepte dürfen ohne ausdrückliche Genehmigung nicht an Dritte weitergegeben oder für andere Projekte verwendet werden.</p>
             <p>(3) Der Auftragnehmer behält sich das Recht vor, die erstellten Arbeiten als Referenz zu verwenden, sofern der Auftraggeber nicht ausdrücklich widerspricht.</p>
             <h3 class="font-bold text-navy-900 text-base mt-6">§ 8 Vertragslaufzeit und Kündigung</h3>
-            <p>(1) Die Vertragslaufzeit ergibt sich aus dem jeweiligen Angebot. Wartungs- und Pflegeverträge verlängern sich automatisch um jeweils einen Monat, wenn sie nicht mit einer Frist von 4 Wochen zum Laufzeitende gekündigt werden.</p>
+            <p>(1) Service-Modelle (Pro, Max) haben eine Mindestvertragslaufzeit von 12 Monaten ab Vertragsschluss.</p>
+            <p>(2) Die Kündigung eines Service-Modells muss schriftlich (per E-Mail an info.forestcode@gmail.com) spätestens 3 Monate vor Ablauf der jeweiligen Vertragslaufzeit erfolgen.</p>
+            <p>(3) Liegt 3 Monate vor Ablauf der Vertragslaufzeit keine schriftliche Kündigung vor, verlängert sich der Vertrag automatisch um weitere 12 Monate zu den gleichen Konditionen.</p>
+            <p>(4) Bei Einmalzahlung (Basis-Modell) entfällt eine laufende Vertragsbindung.</p>
             <p>(2) Das Recht zur außerordentlichen Kündigung aus wichtigem Grund bleibt unberührt.</p>
             <p>(3) Im Falle einer Kündigung durch den Auftraggeber vor Fertigstellung sind die bis dahin erbrachten Leistungen zu vergüten.</p>
             <h3 class="font-bold text-navy-900 text-base mt-6">§ 9 Datenschutz und Vertraulichkeit</h3>
@@ -541,7 +550,7 @@
             <h3 class="font-bold text-navy-900 text-base">Vertreten durch</h3>
             <p>Geschäftsführer: Musawar Khawaja</p>
             <h3 class="font-bold text-navy-900 text-base">Kontakt</h3>
-            <p>E-Mail: info@mominsys.de</p>
+            <p>E-Mail: info.forestcode@gmail.com</p>
             <h3 class="font-bold text-navy-900 text-base">Registereintrag</h3>
             <p>Eintragung im Handelsregister<br>Registergericht: Amtsgericht Freiburg<br>Registernummer: HRB 725099</p>
             <h3 class="font-bold text-navy-900 text-base">Umsatzsteuer</h3>
@@ -564,7 +573,7 @@
             <h3 class="font-bold text-navy-900 text-base">1. Datenschutz auf einen Blick</h3>
             <p>Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können.</p>
             <h3 class="font-bold text-navy-900 text-base">2. Verantwortliche Stelle</h3>
-            <p>mominSys UG (haftungsbeschränkt)<br>Handelsname: Forest Code<br>Hammerwerkstr. 1 A<br>79183 Waldkirch<br>E-Mail: info@mominsys.de<br>Geschäftsführer: Musawar Khawaja<br>Amtsgericht Freiburg, HRB 725099</p>
+            <p>mominSys UG (haftungsbeschränkt)<br>Handelsname: Forest Code<br>Hammerwerkstr. 1 A<br>79183 Waldkirch<br>E-Mail: info.forestcode@gmail.com<br>Geschäftsführer: Musawar Khawaja<br>Amtsgericht Freiburg, HRB 725099</p>
             <h3 class="font-bold text-navy-900 text-base">3. Datenerfassung auf dieser Website</h3>
             <p><strong>Wie erfassen wir Ihre Daten?</strong><br>Ihre Daten werden zum einen dadurch erhoben, dass Sie uns diese mitteilen, z. B. durch die Eingabe in unseren Projekt-Konfigurator oder über das Kontaktformular. Andere Daten werden automatisch beim Besuch der Website durch unsere IT-Systeme erfasst. Das sind vor allem technische Daten (z. B. Internetbrowser, Betriebssystem oder Uhrzeit des Seitenaufrufs).</p>
             <p><strong>Projekt-Konfigurator:</strong> Die im Konfigurator eingegebenen Daten (Name, E-Mail, Telefon, Projektdetails) werden ausschließlich zur Bearbeitung Ihrer Projektanfrage verwendet und in unserem CRM-System gespeichert.</p>
@@ -572,7 +581,7 @@
             <h3 class="font-bold text-navy-900 text-base">4. Hosting</h3>
             <p>Diese Website wird bei Netlify gehostet. Details zum Datenschutz bei Netlify finden Sie unter: netlify.com/privacy.</p>
             <h3 class="font-bold text-navy-900 text-base">5. Ihre Rechte</h3>
-            <p>Sie haben jederzeit das Recht auf unentgeltliche Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten. Sie haben außerdem ein Recht, die Berichtigung, Sperrung oder Löschung dieser Daten zu verlangen. Hierzu sowie zu weiteren Fragen zum Thema Datenschutz können Sie sich jederzeit an uns wenden (info@mominsys.de).</p>
+            <p>Sie haben jederzeit das Recht auf unentgeltliche Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten. Sie haben außerdem ein Recht, die Berichtigung, Sperrung oder Löschung dieser Daten zu verlangen. Hierzu sowie zu weiteren Fragen zum Thema Datenschutz können Sie sich jederzeit an uns wenden (info.forestcode@gmail.com).</p>
             <p>Ihnen steht ferner ein Beschwerderecht bei der zuständigen Aufsichtsbehörde zu.</p>
             <h3 class="font-bold text-navy-900 text-base">6. Datensicherheit</h3>
             <p>Die Kommunikation über diese Website erfolgt über eine SSL-verschlüsselte Verbindung (HTTPS). Damit wird sichergestellt, dass Ihre Daten bei der Übertragung nicht von Dritten mitgelesen werden können.</p>
@@ -873,11 +882,21 @@ function getCustomerList() {
 // ==================== INVOICES ====================
 function renderInvoices() {
     var tbody = document.getElementById('invoiceTableBody');
-    if (crmData.invoices.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-400 py-8">Noch keine Rechnungen vorhanden</td></tr>';
+    var searchEl = document.getElementById('invoiceSearch');
+    var search = searchEl ? searchEl.value.toLowerCase().trim() : '';
+    var filtered = crmData.invoices;
+    if (search) {
+        filtered = filtered.filter(function(inv) {
+            return (inv.number && inv.number.toLowerCase().indexOf(search) > -1) ||
+                   (inv.customerId && inv.customerId.toLowerCase().indexOf(search) > -1) ||
+                   (inv.customerName && inv.customerName.toLowerCase().indexOf(search) > -1);
+        });
+    }
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-400 py-8">' + (search ? 'Keine Rechnungen gefunden' : 'Noch keine Rechnungen vorhanden') + '</td></tr>';
         return;
     }
-    tbody.innerHTML = crmData.invoices.slice().reverse().map(function(inv) {
+    tbody.innerHTML = filtered.slice().reverse().map(function(inv) {
         return '<tr>' +
             '<td class="font-mono text-xs">' + inv.number + '</td>' +
             '<td class="font-medium">' + esc(inv.customerName) + '</td>' +
@@ -1059,7 +1078,7 @@ function composeReply(id) {
     closeModal();
 
     var subject = encodeURIComponent('Re: Website-Anfrage ' + inq.customerId);
-    var body = encodeURIComponent('Sehr geehrte/r ' + inq.name + ',\n\nvielen Dank für Ihre Anfrage.\n\n\n\nMit freundlichen Grüßen\nForest Code\ninfo@mominsys.de');
+    var body = encodeURIComponent('Sehr geehrte/r ' + inq.name + ',\n\nvielen Dank für Ihre Anfrage.\n\n\n\nMit freundlichen Grüßen\nForest Code\ninfo.forestcode@gmail.com');
     window.open('mailto:' + inq.email + '?subject=' + subject + '&body=' + body, '_blank');
 }
 
@@ -1219,7 +1238,7 @@ function viewInvoice(id) {
                     '<strong style="color:#cbd5e1;">mominSys UG (haftungsbeschr.)</strong><br>' +
                     'Hammerwerkstr. 1 A<br>' +
                     '79183 Waldkirch<br>' +
-                    'info@mominsys.de' +
+                    'info.forestcode@gmail.com' +
                 '</div>' +
                 '<div>' +
                     '<strong style="color:#cbd5e1;">Registergericht</strong><br>' +
@@ -1258,14 +1277,40 @@ function printInvoice() {
 
 
 // ==================== CONTRACTS ====================
+function getServiceInfo(model) {
+    if (model === 'pro') return { label: 'Pro', monthly: 45, hasSubscription: true };
+    if (model === 'max') return { label: 'Max', monthly: 70, hasSubscription: true };
+    return { label: 'Einmalig', monthly: 0, hasSubscription: false };
+}
+
+function getContractLaufzeit(inq) {
+    var info = getServiceInfo(inq.serviceModel);
+    if (!info.hasSubscription) return '–';
+    var start = new Date(inq.createdAt);
+    var end = new Date(start);
+    end.setMonth(end.getMonth() + 12);
+    var kuendigung = new Date(end);
+    kuendigung.setMonth(kuendigung.getMonth() - 3);
+    var now = new Date();
+    if (now < kuendigung) return 'Läuft bis ' + formatDate(end.toISOString());
+    return 'Verlängerung am ' + formatDate(end.toISOString());
+}
+
 function renderContracts() {
     var tbody = document.getElementById('contractTableBody');
+    var searchEl = document.getElementById('contractSearch');
+    var search = searchEl ? searchEl.value.toLowerCase().trim() : '';
     // Contracts are generated from inquiries that have status 'abgeschlossen', 'bezahlt', or 'abgenommen'
     var contractInquiries = crmData.inquiries.filter(function(inq) {
-        return ['abgeschlossen', 'bezahlt', 'abgenommen'].indexOf(inq.status) !== -1;
+        if (['abgeschlossen', 'bezahlt', 'abgenommen'].indexOf(inq.status) === -1) return false;
+        if (search) {
+            return (inq.customerId && inq.customerId.toLowerCase().indexOf(search) > -1) ||
+                   (inq.name && inq.name.toLowerCase().indexOf(search) > -1);
+        }
+        return true;
     });
     if (contractInquiries.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-400 py-8">Noch keine Verträge vorhanden</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-slate-400 py-8">' + (search ? 'Keine Verträge gefunden' : 'Noch keine Verträge vorhanden') + '</td></tr>';
         return;
     }
     tbody.innerHTML = contractInquiries.slice().reverse().map(function(inq) {
@@ -1274,11 +1319,16 @@ function renderContracts() {
         else if (inq.status === 'bezahlt') statusBadge = '<span class="badge badge-paid">Bezahlt</span>';
         else statusBadge = '<span class="badge badge-progress">Abgeschlossen</span>';
         var contractNr = 'V-' + inq.customerId;
+        var sInfo = getServiceInfo(inq.serviceModel);
+        var monthlyDisplay = sInfo.hasSubscription ? sInfo.monthly + ' €/Monat' : '–';
+        var laufzeit = getContractLaufzeit(inq);
         return '<tr>' +
             '<td class="font-mono text-xs">' + contractNr + '</td>' +
             '<td class="font-medium">' + esc(inq.name) + '</td>' +
+            '<td class="text-sm">' + sInfo.label + '</td>' +
+            '<td class="text-sm font-semibold">' + monthlyDisplay + '</td>' +
             '<td class="font-semibold">' + (inq.totalPrice ? inq.totalPrice.toLocaleString('de-DE') + ' €' : '–') + '</td>' +
-            '<td class="text-sm text-slate-500">' + formatDate(inq.createdAt) + '</td>' +
+            '<td class="text-xs text-slate-500">' + laufzeit + '</td>' +
             '<td>' + statusBadge + '</td>' +
             '<td><button onclick="viewContract(\'' + inq.id + '\')" class="text-brand-500 hover:underline text-sm">Anzeigen</button></td>' +
         '</tr>';
@@ -1297,7 +1347,12 @@ function viewContract(id) {
     // Build line items from inquiry
     var items = [];
     if (inq.siteType) items.push({ desc: 'Website-Erstellung: ' + inq.siteType + (inq.pages ? ' (' + inq.pages + ' Seiten)' : ''), amount: inq.basePrice || 0 });
-    if (inq.serviceModel) items.push({ desc: 'Service-Modell: ' + inq.serviceModel, amount: 0, note: 'inkl. Grundpreis' });
+    var svcInfo = getServiceInfo(inq.serviceModel);
+    if (inq.serviceModel && svcInfo.hasSubscription) {
+        items.push({ desc: 'Service-Modell: ' + svcInfo.label + ' (' + svcInfo.monthly + ' €/Monat)', amount: svcInfo.monthly, note: 'Monatlich' });
+    } else if (inq.serviceModel) {
+        items.push({ desc: 'Service-Modell: Einmalig', amount: 0, note: 'Keine laufenden Kosten' });
+    }
     if (inq.features) {
         var feats = inq.features.split(',');
         feats.forEach(function(f) {
@@ -1362,8 +1417,28 @@ function viewContract(id) {
                     '<tr style="border-top:2px solid #0b1121;"><td></td><td style="padding:12px;font-weight:700;">Gesamtbetrag (netto)</td><td style="padding:12px;font-weight:700;text-align:right;font-size:16px;">' + totalAmount.toLocaleString('de-DE') + ' \u20ac</td></tr>' +
                 '</tfoot>' +
             '</table>' +
+            (function() {
+                var si = getServiceInfo(inq.serviceModel);
+                var laufzeitBlock = '';
+                if (si.hasSubscription) {
+                    var startD = new Date(inq.createdAt);
+                    var endD = new Date(startD); endD.setMonth(endD.getMonth() + 12);
+                    var kuendD = new Date(endD); kuendD.setMonth(kuendD.getMonth() - 3);
+                    laufzeitBlock =
+                        '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
+                            '<div style="font-size:12px;font-weight:700;color:#1e40af;margin-bottom:6px;">Abo-Vertragsbedingungen (' + si.label + ' – ' + si.monthly + ' €/Monat)</div>' +
+                            '<div style="font-size:11px;color:#1e3a5f;line-height:1.8;">' +
+                                '• <strong>Mindestlaufzeit:</strong> 12 Monate (bis ' + formatDate(endD.toISOString()) + ')<br>' +
+                                '• <strong>Kündigungsfrist:</strong> 3 Monate vor Ablauf der Laufzeit (bis spätestens ' + formatDate(kuendD.toISOString()) + ')<br>' +
+                                '• <strong>Kündigung:</strong> Schriftlich per E-Mail an info.forestcode@gmail.com<br>' +
+                                '• <strong>Automatische Verlängerung:</strong> Liegt 3 Monate vor Ablauf keine schriftliche Kündigung vor, verlängert sich der Vertrag automatisch um weitere 12 Monate.' +
+                            '</div>' +
+                        '</div>';
+                }
+                return laufzeitBlock;
+            })() +
             '<div style="font-size:11px;color:#64748b;line-height:1.7;margin-bottom:16px;">' +
-                '<strong style="color:#1e293b;">Vertragsbedingungen:</strong><br>' +
+                '<strong style="color:#1e293b;">Allgemeine Vertragsbedingungen:</strong><br>' +
                 '1. Es gelten die Allgemeinen Geschäftsbedingungen (AGB) der mominSys UG (haftungsbeschränkt).<br>' +
                 '2. Die Zahlung ist innerhalb von 14 Tagen nach Rechnungsstellung fällig.<br>' +
                 '3. Der Auftraggeber hat nach Fertigstellung 5 Werktage Zeit für die Abnahme. Erfolgt innerhalb dieser Frist keine Rückmeldung, gilt die Leistung als abgenommen.<br>' +
@@ -1384,7 +1459,7 @@ function viewContract(id) {
                     '<strong style="color:#cbd5e1;">mominSys UG (haftungsbeschr.)</strong><br>' +
                     'Hammerwerkstr. 1 A<br>' +
                     '79183 Waldkirch<br>' +
-                    'info@mominsys.de' +
+                    'info.forestcode@gmail.com' +
                 '</div>' +
                 '<div>' +
                     '<strong style="color:#cbd5e1;">Registergericht</strong><br>' +
