@@ -477,6 +477,7 @@
             <p>(2) Personenbezogene Daten werden nicht an Dritte weitergegeben, es sei denn, dies ist zur Vertragserfüllung erforderlich oder gesetzlich vorgeschrieben.</p>
             <p>(3) Beide Parteien verpflichten sich, vertrauliche Informationen, die im Rahmen der Zusammenarbeit bekannt werden, nicht an Dritte weiterzugeben und vertraulich zu behandeln.</p>
             <p>(4) Weitere Informationen zum Datenschutz finden Sie in unserer Datenschutzerklärung.</p>
+            <p>(5) Mit der Absendung einer Projektanfrage über den Konfigurator oder das Kontaktformular willigt der Auftraggeber ein, dass der Auftragnehmer ihn per E-Mail oder Telefon bezüglich der Anfrage kontaktieren darf. Diese Einwilligung kann jederzeit widerrufen werden.</p>
 
             <h3 class="font-bold text-navy-900 text-base mt-6">§ 10 Schlussbestimmungen</h3>
             <p>(1) Es gilt das Recht der Bundesrepublik Deutschland.</p>
@@ -517,7 +518,7 @@
 
             <h3 class="font-bold text-navy-900 text-base">3. Datenerfassung auf dieser Website</h3>
             <p><strong>Wie erfassen wir Ihre Daten?</strong><br>Ihre Daten werden zum einen dadurch erhoben, dass Sie uns diese mitteilen, z. B. durch die Eingabe in unseren Projekt-Konfigurator oder über das Kontaktformular. Andere Daten werden automatisch beim Besuch der Website durch unsere IT-Systeme erfasst. Das sind vor allem technische Daten (z. B. Internetbrowser, Betriebssystem oder Uhrzeit des Seitenaufrufs).</p>
-            <p><strong>Projekt-Konfigurator:</strong> Die im Konfigurator eingegebenen Daten (Name, E-Mail, Telefon, Projektdetails) werden ausschließlich zur Bearbeitung Ihrer Projektanfrage verwendet und in unserem CRM-System gespeichert.</p>
+            <p><strong>Projekt-Konfigurator:</strong> Die im Konfigurator eingegebenen Daten (Name, E-Mail, Telefon, Projektdetails) werden ausschließlich zur Bearbeitung Ihrer Projektanfrage verwendet und in unserem CRM-System gespeichert. Mit dem Absenden des Konfigurators stimmen Sie zu, dass wir Sie per E-Mail oder Telefon bezüglich Ihrer Anfrage kontaktieren dürfen. Diese Einwilligung können Sie jederzeit widerrufen, z.&nbsp;B. per E-Mail an info.forestcode@gmail.com.</p>
             <p><strong>Wofür nutzen wir Ihre Daten?</strong><br>Die Daten werden erhoben, um eine fehlerfreie Bereitstellung der Website zu gewährleisten und zur Bearbeitung Ihrer Anfragen. Eine anderweitige Verwendung oder Weitergabe an Dritte findet nicht statt.</p>
 
             <h3 class="font-bold text-navy-900 text-base">4. Hosting</h3>
@@ -699,7 +700,13 @@
                     </div>
                     <div class="mb-6"><label class="block text-sm font-medium text-navy-900 mb-1.5">Weitere Mitteilungen</label><textarea name="mitteilungen" id="konfigMessage" rows="2" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition text-sm resize-none" placeholder="Möchten Sie uns noch etwas mitteilen?"></textarea></div>
                     <input type="hidden" name="konfiguration" id="konfigHiddenData">
-                    <button type="submit" id="konfigSubmitBtn" class="btn-primary w-full justify-center"><span id="konfigBtnText">Anfrage unverbindlich und kostenlos absenden</span></button>
+                    <div class="mb-4">
+                        <label class="flex items-start gap-3 cursor-pointer select-none">
+                            <input type="checkbox" id="konfigAgbCheckbox" class="mt-1 w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" onchange="document.getElementById('konfigSubmitBtn').disabled = !this.checked;">
+                            <span class="text-sm text-slate-600">Ich stimme den <a href="#" onclick="openLegal('agb'); return false;" class="text-brand-500 hover:underline font-medium">AGB</a> und der <a href="#" onclick="openLegal('datenschutz'); return false;" class="text-brand-500 hover:underline font-medium">Datenschutzerklärung</a> zu. Ich bin damit einverstanden, dass Forest Code mich bezüglich meiner Anfrage per E-Mail oder Telefon kontaktieren darf.</span>
+                        </label>
+                    </div>
+                    <button type="submit" id="konfigSubmitBtn" disabled class="btn-primary w-full justify-center opacity-50 cursor-not-allowed disabled:opacity-50 disabled:cursor-not-allowed"><span id="konfigBtnText">Anfrage unverbindlich und kostenlos absenden</span></button>
                     <div id="konfigSuccess" class="hidden mt-4 p-4 bg-green-50 text-green-700 rounded-lg text-sm text-center">Vielen Dank! Ihre Projektanfrage wurde erfolgreich gesendet. Wir melden uns zeitnah bei Ihnen.</div>
                     <div id="konfigError" class="hidden mt-4 p-4 bg-red-50 text-red-700 rounded-lg text-sm text-center">Es gab ein Problem beim Senden. Bitte versuchen Sie es erneut.</div>
                 </form>
@@ -952,7 +959,10 @@ function konfigPrev() { saveCurrentStepData(); if (konfigState.step > 1) { konfi
 
 // Konfigurator form submit
 document.getElementById('konfigForm').addEventListener('submit', function(e) {
-    e.preventDefault(); saveCurrentStepData(); buildSummary();
+    e.preventDefault();
+    var agbCheck = document.getElementById('konfigAgbCheckbox');
+    if (!agbCheck || !agbCheck.checked) { alert('Bitte stimmen Sie den AGB und der Datenschutzerklärung zu.'); return; }
+    saveCurrentStepData(); buildSummary();
     var btn = document.getElementById('konfigSubmitBtn'), text = document.getElementById('konfigBtnText');
     text.textContent = 'Wird gesendet...'; btn.disabled = true;
     var fd = new FormData(this);
