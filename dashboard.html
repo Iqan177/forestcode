@@ -6,6 +6,7 @@
     <title>Forest Code – CRM Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -152,6 +153,10 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                 Verträge
             </a>
+            <a class="sidebar-link" data-view="archive" onclick="switchView('archive')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+                Archiv
+            </a>
             <a class="sidebar-link" data-view="emails" onclick="switchView('emails')">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 E-Mails
@@ -207,6 +212,30 @@
                     <div class="stat-card">
                         <div class="text-sm text-slate-500 mb-1">Gesamtumsatz</div>
                         <div id="statRevenue" class="text-2xl font-bold text-brand-600">0 €</div>
+                    </div>
+                </div>
+
+                <!-- Erweiterte KPIs -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                    <div class="stat-card">
+                        <div class="text-sm text-slate-500 mb-1">Konversionsrate</div>
+                        <div id="statConversion" class="text-2xl font-bold text-purple-600">0 %</div>
+                        <div class="text-xs text-slate-400 mt-1">Anfrage → Auftrag</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="text-sm text-slate-500 mb-1">Ø Durchlaufzeit</div>
+                        <div id="statLeadTime" class="text-2xl font-bold text-cyan-600">– Tage</div>
+                        <div class="text-xs text-slate-400 mt-1">Anfrage → Abgenommen</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="text-sm text-slate-500 mb-1">Abo-Quote</div>
+                        <div id="statAboRate" class="text-2xl font-bold text-emerald-600">0 %</div>
+                        <div class="text-xs text-slate-400 mt-1">Abgeschlossen mit Abo</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="text-sm text-slate-500 mb-1">Offene Rechnungen</div>
+                        <div id="statOpenInvoices" class="text-2xl font-bold text-red-500">0 €</div>
+                        <div class="text-xs text-slate-400 mt-1">Unbezahlte Forderungen</div>
                     </div>
                 </div>
 
@@ -316,12 +345,24 @@
             <!-- ========= INVOICES VIEW ========= -->
             <div id="view-invoices" class="hidden">
                 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                    <div class="p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
                         <h2 class="font-heading font-bold text-navy-900">Rechnungen</h2>
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-3 flex-wrap">
                             <input type="text" id="invoiceSearch" oninput="renderInvoices()" placeholder="Suche nach Kunden-Nr. oder Name…" class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-brand-500">
                             <button onclick="openNewInvoice()" class="btn-primary text-sm">+ Neue Rechnung</button>
                         </div>
+                    </div>
+                    <!-- Export-Bereich für Steuerberater -->
+                    <div class="p-4 border-b border-slate-100 bg-slate-50 flex items-center gap-3 flex-wrap">
+                        <span class="text-sm font-medium text-slate-600">Export:</span>
+                        <label class="text-sm text-slate-500">Von</label>
+                        <input type="date" id="exportDateFrom" class="px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <label class="text-sm text-slate-500">Bis</label>
+                        <input type="date" id="exportDateTo" class="px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <button onclick="exportInvoicesExcel()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            Excel-Export (Steuerberater)
+                        </button>
                     </div>
                     <table class="data-table">
                         <thead>
@@ -378,6 +419,35 @@
                     <div id="emailList" class="divide-y divide-slate-100">
                         <div class="p-5 text-center text-slate-400">Noch keine E-Mails vorhanden</div>
                     </div>
+                </div>
+            </div>
+
+                        <!-- ========= ARCHIVE VIEW ========= -->
+            <div id="view-archive" class="hidden">
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                        <div>
+                            <h2 class="font-heading font-bold text-navy-900">Archiv</h2>
+                            <p class="text-sm text-slate-500 mt-1">Abgenommene und abgeschlossene Projekte</p>
+                        </div>
+                        <input type="text" id="archiveSearch" oninput="renderArchive()" placeholder="Suche nach Projekt-Nr. oder Name…" class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Projekt-Nr.</th>
+                                <th>Kunde</th>
+                                <th>Paket</th>
+                                <th>Betrag</th>
+                                <th>Status</th>
+                                <th>Abgenommen am</th>
+                                <th>Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archiveTableBody">
+                            <tr><td colspan="7" class="text-center text-slate-400 py-8">Noch keine archivierten Projekte</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -530,6 +600,7 @@
             <p>(2) Personenbezogene Daten werden nicht an Dritte weitergegeben, es sei denn, dies ist zur Vertragserfüllung erforderlich oder gesetzlich vorgeschrieben.</p>
             <p>(3) Beide Parteien verpflichten sich, vertrauliche Informationen, die im Rahmen der Zusammenarbeit bekannt werden, nicht an Dritte weiterzugeben und vertraulich zu behandeln.</p>
             <p>(4) Weitere Informationen zum Datenschutz finden Sie in unserer Datenschutzerklärung.</p>
+            <p>(5) Mit der Absendung einer Projektanfrage über den Konfigurator oder das Kontaktformular willigt der Auftraggeber ein, dass der Auftragnehmer ihn per E-Mail oder Telefon bezüglich der Anfrage kontaktieren darf. Diese Einwilligung kann jederzeit widerrufen werden.</p>
             <h3 class="font-bold text-navy-900 text-base mt-6">§ 10 Schlussbestimmungen</h3>
             <p>(1) Es gilt das Recht der Bundesrepublik Deutschland.</p>
             <p>(2) Gerichtsstand ist, soweit gesetzlich zulässig, der Sitz des Auftragnehmers (Waldkirch).</p>
@@ -647,7 +718,8 @@ async function loadInquiries() {
             referenceWebsites: r.reference_websites, message: r.message,
             summary: r.summary, basePrice: r.base_price, featurePrice: r.feature_price,
             totalPrice: r.total_price, status: r.status, source: r.source,
-            createdAt: r.created_at, statusChangedAt: r.status_changed_at
+            createdAt: r.created_at, statusChangedAt: r.status_changed_at,
+            notes: r.notes || '', correctionRounds: r.correction_rounds || 0, aboChangesUsed: r.abo_changes_used || 0
         };
     });
 }
@@ -720,20 +792,21 @@ async function handleLogout() {
 
 // ==================== NAVIGATION ====================
 function switchView(view) {
-    var views = ['overview', 'pipeline', 'customers', 'invoices', 'contracts', 'emails'];
+    var views = ['overview', 'pipeline', 'customers', 'invoices', 'contracts', 'emails', 'archive'];
     views.forEach(function(v) {
         document.getElementById('view-' + v).classList.toggle('hidden', v !== view);
     });
     document.querySelectorAll('.sidebar-link').forEach(function(el) {
         el.classList.toggle('active', el.dataset.view === view);
     });
-    var titles = { overview:'Übersicht', pipeline:'Pipeline', customers:'Kunden', invoices:'Rechnungen', contracts:'Verträge', emails:'E-Mails' };
+    var titles = { overview:'Übersicht', pipeline:'Pipeline', customers:'Kunden', invoices:'Rechnungen', contracts:'Verträge', emails:'E-Mails', archive:'Archiv' };
     document.getElementById('pageTitle').textContent = titles[view] || 'Dashboard';
     if (view === 'pipeline') renderPipeline();
     if (view === 'customers') renderCustomers();
     if (view === 'invoices') renderInvoices();
     if (view === 'contracts') renderContracts();
     if (view === 'emails') renderEmails();
+    if (view === 'archive') renderArchive();
 }
 
 function toggleSidebar() {
@@ -768,7 +841,7 @@ async function refreshAll() {
     updateStats();
     renderRecentTable();
     // Re-render the currently active view
-    var views = ['pipeline', 'customers', 'invoices', 'emails'];
+    var views = ['pipeline', 'customers', 'invoices', 'contracts', 'emails', 'archive'];
     views.forEach(function(v) {
         var el = document.getElementById('view-' + v);
         if (el && !el.classList.contains('hidden')) {
@@ -777,6 +850,7 @@ async function refreshAll() {
             if (v === 'invoices') renderInvoices();
             if (v === 'contracts') renderContracts();
             if (v === 'emails') renderEmails();
+            if (v === 'archive') renderArchive();
         }
     });
 }
@@ -792,6 +866,36 @@ function updateStats() {
     document.getElementById('statProgress').textContent = prog;
     document.getElementById('statDone').textContent = done;
     document.getElementById('statRevenue').textContent = revenue.toLocaleString('de-DE') + ' €';
+
+    // Erweiterte KPIs
+    // 1. Konversionsrate: Aufträge (ab bearbeitung) / Alle Anfragen
+    var total = inqs.length;
+    var converted = inqs.filter(function(i){ return i.status !== 'neu'; }).length;
+    var convRate = total > 0 ? Math.round((converted / total) * 100) : 0;
+    document.getElementById('statConversion').textContent = convRate + ' %';
+
+    // 2. Durchschnittliche Durchlaufzeit (Anfrage → Abgenommen)
+    var completed = inqs.filter(function(i){ return i.status === 'abgenommen' && i.createdAt && i.statusChangedAt; });
+    if (completed.length > 0) {
+        var totalDays = completed.reduce(function(sum, i) {
+            var days = (new Date(i.statusChangedAt) - new Date(i.createdAt)) / (1000 * 60 * 60 * 24);
+            return sum + days;
+        }, 0);
+        var avgDays = Math.round(totalDays / completed.length);
+        document.getElementById('statLeadTime').textContent = avgDays + ' Tage';
+    } else {
+        document.getElementById('statLeadTime').textContent = '– Tage';
+    }
+
+    // 3. Abo-Quote: Projekte mit Service-Modell (Pro/Max) / Alle abgeschlossenen Projekte
+    var abgeschlossen = inqs.filter(function(i){ return i.status === 'abgeschlossen' || i.status === 'bezahlt' || i.status === 'abgenommen'; }).length;
+    var withAbo = inqs.filter(function(i){ return (i.status === 'abgeschlossen' || i.status === 'bezahlt' || i.status === 'abgenommen') && i.serviceModel && i.serviceModel.toLowerCase() !== 'starter'; }).length;
+    var aboRate = abgeschlossen > 0 ? Math.round((withAbo / abgeschlossen) * 100) : 0;
+    document.getElementById('statAboRate').textContent = Math.min(aboRate, 100) + ' %';
+
+    // 4. Offene Rechnungen
+    var openInvoices = crmData.invoices.filter(function(inv){ return !inv.paid; }).reduce(function(sum, inv){ return sum + inv.amount; }, 0);
+    document.getElementById('statOpenInvoices').textContent = openInvoices.toLocaleString('de-DE') + ' €';
 }
 
 // ==================== RECENT TABLE ====================
@@ -933,6 +1037,182 @@ function renderEmails() {
     }).join('');
 }
 
+// ==================== ARCHIVE ====================
+function renderArchive() {
+    var tbody = document.getElementById('archiveTableBody');
+    var searchVal = (document.getElementById('archiveSearch').value || '').toLowerCase();
+    var archived = crmData.inquiries.filter(function(inq) {
+        return inq.status === 'abgenommen';
+    });
+    if (searchVal) {
+        archived = archived.filter(function(inq) {
+            return (inq.customerId || '').toLowerCase().indexOf(searchVal) !== -1 ||
+                   (inq.name || '').toLowerCase().indexOf(searchVal) !== -1 ||
+                   (inq.id || '').toLowerCase().indexOf(searchVal) !== -1;
+        });
+    }
+    archived.sort(function(a, b) {
+        return new Date(b.statusChangedAt || b.createdAt) - new Date(a.statusChangedAt || a.createdAt);
+    });
+    if (archived.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400 py-8">Keine archivierten Projekte gefunden</td></tr>';
+        return;
+    }
+    tbody.innerHTML = archived.map(function(inq) {
+        var abgenommenDate = inq.statusChangedAt ? formatDate(inq.statusChangedAt) : '–';
+        return '<tr class="hover:bg-slate-50 cursor-pointer" onclick="openDetail(\'' + inq.id + '\')">' +
+            '<td class="font-medium">' + esc(inq.customerId || '–') + '</td>' +
+            '<td>' + esc(inq.name) + '</td>' +
+            '<td>' + esc(inq.siteType || '–') + '</td>' +
+            '<td>' + (inq.totalPrice ? formatCurrency(inq.totalPrice) : '–') + '</td>' +
+            '<td>' + statusBadge(inq.status) + '</td>' +
+            '<td>' + abgenommenDate + '</td>' +
+            '<td><button onclick="event.stopPropagation(); openDetail(\'' + inq.id + '\')" class="text-brand-500 hover:text-brand-700 text-sm font-medium">Details</button></td>' +
+        '</tr>';
+    }).join('');
+}
+
+// ==================== EXCEL EXPORT (Steuerberater) ====================
+function exportInvoicesExcel() {
+    var fromVal = document.getElementById('exportDateFrom').value;
+    var toVal = document.getElementById('exportDateTo').value;
+    var fromDate = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+    var toDate = toVal ? new Date(toVal + 'T23:59:59') : null;
+
+    var filtered = crmData.invoices.filter(function(inv) {
+        var d = new Date(inv.createdAt);
+        if (fromDate && d < fromDate) return false;
+        if (toDate && d > toDate) return false;
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        alert('Keine Rechnungen im gewählten Zeitraum gefunden.');
+        return;
+    }
+
+    // Sort by date
+    filtered.sort(function(a, b) { return new Date(a.createdAt) - new Date(b.createdAt); });
+
+    // --- Sheet 1: Rechnungsübersicht ---
+    var overviewData = [['Rechnungsübersicht – Forest Code / mominSys UG (haftungsbeschränkt)'], ['Zeitraum: ' + (fromVal || 'Anfang') + ' bis ' + (toVal || 'Heute')], ['Erstellt am: ' + new Date().toLocaleDateString('de-DE')], [''], ['Rechnungs-Nr.', 'Rechnungsdatum', 'Kunden-Nr.', 'Kundenname', 'Kunden-E-Mail', 'Nettobetrag (€)', 'USt (%)', 'USt-Betrag (€)', 'Bruttobetrag (€)', 'Zahlungsstatus', 'Zahlungsart', 'Bemerkung']];
+
+    var totalNetto = 0;
+    var totalBezahlt = 0;
+    var totalOffen = 0;
+
+    filtered.forEach(function(inv) {
+        var netto = inv.amount || 0;
+        totalNetto += netto;
+        if (inv.paid) totalBezahlt += netto; else totalOffen += netto;
+
+        overviewData.push([
+            inv.number || '',
+            inv.createdAt ? new Date(inv.createdAt).toLocaleDateString('de-DE') : '',
+            inv.customerId || '',
+            inv.customerName || '',
+            inv.customerEmail || '',
+            netto,
+            0, // Kleinunternehmer § 19 UStG
+            0,
+            netto, // Brutto = Netto (keine USt)
+            inv.paid ? 'Bezahlt' : 'Offen',
+            'Überweisung',
+            'Kleinunternehmer gem. § 19 UStG – keine USt ausgewiesen'
+        ]);
+    });
+
+    // Summenzeile
+    overviewData.push([]);
+    overviewData.push(['', '', '', '', 'SUMME:', totalNetto, '', 0, totalNetto, '', '', '']);
+    overviewData.push(['', '', '', '', 'Davon bezahlt:', totalBezahlt, '', '', totalBezahlt, '', '', '']);
+    overviewData.push(['', '', '', '', 'Noch offen:', totalOffen, '', '', totalOffen, '', '', '']);
+
+    // --- Sheet 2: Einzelpositionen ---
+    var itemsData = [['Rechnungspositionen – Detailansicht'], [''], ['Rechnungs-Nr.', 'Rechnungsdatum', 'Kundenname', 'Position', 'Beschreibung', 'Nettobetrag (€)', 'Bemerkung']];
+
+    filtered.forEach(function(inv) {
+        var items = inv.items || [];
+        if (items.length === 0) {
+            itemsData.push([inv.number || '', inv.createdAt ? new Date(inv.createdAt).toLocaleDateString('de-DE') : '', inv.customerName || '', 1, 'Gesamtbetrag', inv.amount || 0, '']);
+        } else {
+            items.forEach(function(item, idx) {
+                itemsData.push([
+                    inv.number || '',
+                    inv.createdAt ? new Date(inv.createdAt).toLocaleDateString('de-DE') : '',
+                    inv.customerName || '',
+                    idx + 1,
+                    item.desc || '',
+                    item.amount || 0,
+                    item.note || ''
+                ]);
+            });
+        }
+    });
+
+    // --- Sheet 3: Zusammenfassung (GuV-relevant) ---
+    var summaryData = [
+        ['Zusammenfassung für Steuerberater'],
+        ['Unternehmen: mominSys UG (haftungsbeschränkt) – Marke: Forest Code'],
+        ['Zeitraum: ' + (fromVal || 'Anfang') + ' bis ' + (toVal || 'Heute')],
+        ['Erstellt am: ' + new Date().toLocaleDateString('de-DE')],
+        ['Steuer-Hinweis: Kleinunternehmerregelung § 19 UStG – keine Umsatzsteuer'],
+        [''],
+        ['Kennzahl', 'Betrag (€)'],
+        ['Anzahl Rechnungen (gesamt)', filtered.length],
+        ['Umsatzerlöse (netto = brutto)', totalNetto],
+        ['Davon bezahlt', totalBezahlt],
+        ['Offene Forderungen', totalOffen],
+        ['Umsatzsteuer', 0],
+        [''],
+        ['Zahlungsstatus-Übersicht', ''],
+        ['Bezahlt', filtered.filter(function(i) { return i.paid; }).length],
+        ['Offen', filtered.filter(function(i) { return !i.paid; }).length]
+    ];
+
+    // --- Sheet 4: Kundenliste ---
+    var customerMap = {};
+    filtered.forEach(function(inv) {
+        var cid = inv.customerId || 'unbekannt';
+        if (!customerMap[cid]) {
+            customerMap[cid] = { name: inv.customerName || '', email: inv.customerEmail || '', total: 0, count: 0, paid: 0, open: 0 };
+        }
+        customerMap[cid].total += (inv.amount || 0);
+        customerMap[cid].count++;
+        if (inv.paid) customerMap[cid].paid += (inv.amount || 0);
+        else customerMap[cid].open += (inv.amount || 0);
+    });
+
+    var customerData = [['Kundenumsatzliste'], [''], ['Kunden-Nr.', 'Kundenname', 'E-Mail', 'Anzahl Rechnungen', 'Gesamtumsatz (€)', 'Bezahlt (€)', 'Offen (€)']];
+    Object.keys(customerMap).forEach(function(cid) {
+        var c = customerMap[cid];
+        customerData.push([cid, c.name, c.email, c.count, c.total, c.paid, c.open]);
+    });
+
+    // Workbook erstellen
+    var wb = XLSX.utils.book_new();
+
+    var ws1 = XLSX.utils.aoa_to_sheet(overviewData);
+    ws1['!cols'] = [{wch:16},{wch:16},{wch:14},{wch:25},{wch:30},{wch:16},{wch:10},{wch:14},{wch:16},{wch:14},{wch:14},{wch:45}];
+    XLSX.utils.book_append_sheet(wb, ws1, 'Rechnungsübersicht');
+
+    var ws2 = XLSX.utils.aoa_to_sheet(itemsData);
+    ws2['!cols'] = [{wch:16},{wch:16},{wch:25},{wch:10},{wch:40},{wch:16},{wch:30}];
+    XLSX.utils.book_append_sheet(wb, ws2, 'Einzelpositionen');
+
+    var ws3 = XLSX.utils.aoa_to_sheet(summaryData);
+    ws3['!cols'] = [{wch:35},{wch:20}];
+    XLSX.utils.book_append_sheet(wb, ws3, 'Zusammenfassung');
+
+    var ws4 = XLSX.utils.aoa_to_sheet(customerData);
+    ws4['!cols'] = [{wch:14},{wch:25},{wch:30},{wch:18},{wch:18},{wch:14},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, ws4, 'Kundenumsatz');
+
+    // Dateiname mit Zeitraum
+    var filename = 'ForestCode_Rechnungen_' + (fromVal || 'Gesamt') + '_bis_' + (toVal || 'Heute') + '.xlsx';
+    XLSX.writeFile(wb, filename);
+}
+
 // ==================== DETAIL MODAL ====================
 function openDetail(id) {
     var inq = crmData.inquiries.find(function(i) { return i.id === id; });
@@ -982,6 +1262,34 @@ function openDetail(id) {
                 '<button onclick="addCustomService(\'' + inq.id + '\')" class="btn-primary text-xs px-3 py-1.5">Hinzufügen</button>' +
             '</div>' +
         '</div>' +
+        '<div class="mb-6 border border-slate-200 rounded-xl overflow-hidden">' +
+            '<div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">' +
+                '<div class="flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg><span class="text-sm font-semibold text-navy-900">Korrekturschleifen</span></div>' +
+                '<span class="text-xs font-medium ' + ((inq.correctionRounds || 0) >= 2 ? 'text-red-500' : 'text-green-600') + '">' + (inq.correctionRounds || 0) + ' / 2 inklusive</span>' +
+            '</div>' +
+            '<div class="p-4 flex items-center gap-3">' +
+                '<div class="flex-1">' +
+                    '<div class="flex gap-1">' +
+                        [1,2,3,4,5].map(function(n) {
+                            var active = n <= (inq.correctionRounds || 0);
+                            var overLimit = n > 2;
+                            var colorClass = active ? (overLimit ? 'bg-red-400' : 'bg-green-400') : 'bg-slate-200';
+                            return '<div class="h-2 flex-1 rounded-full ' + colorClass + '"></div>';
+                        }).join('') +
+                    '</div>' +
+                    ((inq.correctionRounds || 0) >= 2 ? '<p class="text-xs text-red-500 mt-2">⚠ Inklusiv-Kontingent aufgebraucht — weitere Schleifen mit Aufpreis</p>' : '<p class="text-xs text-slate-400 mt-2">Noch ' + (2 - (inq.correctionRounds || 0)) + ' kostenlose Schleife(n) verfügbar</p>') +
+                '</div>' +
+                '<div class="flex gap-1">' +
+                    '<button onclick="updateCorrectionRounds(\'' + inq.id + '\', -1)" class="w-8 h-8 rounded-lg border border-slate-300 flex items-center justify-center text-slate-600 hover:bg-slate-100 text-lg font-bold">−</button>' +
+                    '<button onclick="updateCorrectionRounds(\'' + inq.id + '\', 1)" class="w-8 h-8 rounded-lg border border-slate-300 flex items-center justify-center text-slate-600 hover:bg-slate-100 text-lg font-bold">+</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="mb-6">' +
+            '<label class="text-xs text-slate-500 block mb-1">Notizen / Gesprächsprotokoll</label>' +
+            '<textarea id="inquiryNotes" rows="4" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-y" placeholder="Gesprächsnotizen, Anforderungsänderungen, interne Hinweise…">' + esc(inq.notes || '') + '</textarea>' +
+            '<button onclick="saveNotes(\'' + inq.id + '\')" class="btn-secondary text-xs mt-2">Notizen speichern</button>' +
+        '</div>' +
                 '<div class="mb-6"><label class="text-xs text-slate-500 block mb-1">Status ändern</label>' +
             '<select id="statusSelect" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">' +
                 statusOptions.map(function(s) { return '<option value="' + s + '"' + (inq.status === s ? ' selected' : '') + '>' + statusLabels[s] + '</option>'; }).join('') +
@@ -1019,6 +1327,25 @@ async function updateInquiryStatus(id) {
     }
     await refreshAll();
     closeModal();
+}
+
+async function saveNotes(id) {
+    var notes = document.getElementById('inquiryNotes').value;
+    var res = await sb.from('inquiries').update({ notes: notes }).eq('id', id);
+    if (res.error) { alert('Fehler beim Speichern: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    var inq = crmData.inquiries.find(function(i) { return i.id === id; });
+    if (inq) inq.notes = notes;
+    alert('Notizen gespeichert ✓');
+}
+
+async function updateCorrectionRounds(id, delta) {
+    var inq = crmData.inquiries.find(function(i) { return i.id === id; });
+    if (!inq) return;
+    var newVal = Math.max(0, (inq.correctionRounds || 0) + delta);
+    var res = await sb.from('inquiries').update({ correction_rounds: newVal }).eq('id', id);
+    if (res.error) { alert('Fehler: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    inq.correctionRounds = newVal;
+    openDetail(id); // Refresh modal
 }
 
 async function deleteInquiry(id) {
@@ -1476,6 +1803,32 @@ function viewContract(id) {
             '</div>' +
             '</div>' +
         '</div>' +
+        (function() {
+            var si = getServiceInfo(inq.serviceModel);
+            if (!si.hasSubscription) return '';
+            var maxCh = si.label.indexOf('Premium') > -1 ? 1 : 6;
+            var used = inq.aboChangesUsed || 0;
+            var rem = Math.max(0, maxCh - used);
+            var chType = si.label.indexOf('Premium') > -1 ? 'Überarbeitung' : 'Änderungen';
+            var barPct = maxCh > 0 ? Math.min(100, Math.round((used / maxCh) * 100)) : 0;
+            var barCol = rem === 0 ? '#ef4444' : rem <= 1 ? '#f59e0b' : '#22c55e';
+            return '<div class="mt-4 p-4 bg-white border border-slate-200 rounded-xl">' +
+                '<div class="flex items-center justify-between mb-3">' +
+                    '<div class="flex items-center gap-2"><svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>' +
+                    '<span class="text-sm font-semibold text-navy-900">Abo-Kontingent (' + si.label + ')</span></div>' +
+                    '<span class="text-xs font-medium ' + (rem === 0 ? 'text-red-500' : 'text-green-600') + '">' + used + ' / ' + maxCh + ' ' + chType + '</span>' +
+                '</div>' +
+                '<div class="w-full bg-slate-200 rounded-full h-2.5 mb-2">' +
+                    '<div style="width:' + barPct + '%;background:' + barCol + ';" class="h-2.5 rounded-full transition-all"></div>' +
+                '</div>' +
+                (rem > 0 ? '<p class="text-xs text-slate-500">Noch ' + rem + ' ' + chType + ' im aktuellen Jahr verfügbar</p>' : '<p class="text-xs text-red-500 font-medium">\u26a0 Kontingent aufgebraucht \u2014 weitere ' + chType + ' gegen Aufpreis</p>') +
+                '<div class="flex gap-2 mt-3">' +
+                    '<button onclick="updateAboChanges(\'' + inq.id + '\', 1)" class="px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg text-xs font-medium transition-colors">+ \u00c4nderung verbraucht</button>' +
+                    '<button onclick="updateAboChanges(\'' + inq.id + '\', -1)" class="px-3 py-1.5 border border-slate-300 hover:bg-slate-100 text-slate-600 rounded-lg text-xs font-medium transition-colors">\u2212 Korrektur</button>' +
+                    '<button onclick="resetAboChanges(\'' + inq.id + '\')" class="px-3 py-1.5 border border-slate-300 hover:bg-slate-100 text-slate-600 rounded-lg text-xs font-medium transition-colors ml-auto">Z\u00e4hler zur\u00fccksetzen</button>' +
+                '</div>' +
+            '</div>';
+        })() +
         '<div class="flex gap-3 mt-6 justify-end">' +
             '<button onclick="printContract()" class="btn-secondary text-sm">\ud83d\udda8\ufe0f Drucken / PDF</button>' +
             '<button onclick="closeContractModal()" class="btn-primary text-sm">Schließen</button>' +
@@ -1494,6 +1847,26 @@ function printContract() {
     win.document.write('<!DOCTYPE html><html><head><title>Vertrag</title><style>body{font-family:Inter,system-ui,sans-serif;color:#1e293b;padding:30px 40px;max-width:800px;margin:auto}table{width:100%;border-collapse:collapse}th,td{padding:8px 12px;text-align:left}@media print{body{padding:20px}}</style></head><body>' + content + '</body></html>');
     win.document.close();
     setTimeout(function() { win.print(); }, 500);
+}
+
+// ==================== ABO CHANGES COUNTER ====================
+async function updateAboChanges(id, delta) {
+    var inq = crmData.inquiries.find(function(i) { return i.id === id; });
+    if (!inq) return;
+    var newVal = Math.max(0, (inq.aboChangesUsed || 0) + delta);
+    var res = await sb.from('inquiries').update({ abo_changes_used: newVal }).eq('id', id);
+    if (res.error) { alert('Fehler: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    inq.aboChangesUsed = newVal;
+    viewContract(id);
+}
+
+async function resetAboChanges(id) {
+    if (!confirm('Abo-Zähler wirklich zurücksetzen? (z.B. bei neuem Vertragsjahr)')) return;
+    var res = await sb.from('inquiries').update({ abo_changes_used: 0 }).eq('id', id);
+    if (res.error) { alert('Fehler: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    var inq = crmData.inquiries.find(function(i) { return i.id === id; });
+    if (inq) inq.aboChangesUsed = 0;
+    viewContract(id);
 }
 
 // ==================== OPTIONAL SERVICES ====================
