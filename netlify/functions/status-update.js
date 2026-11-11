@@ -29,6 +29,21 @@ var statusMessages = {
     label: 'Abgenommen',
     subject: 'Projekt abgeschlossen – Forest Code',
     text: 'Ihr Projekt wurde erfolgreich abgeschlossen und übergeben. Vielen Dank für Ihr Vertrauen in Forest Code! Bei Fragen oder zukünftigen Projekten stehen wir Ihnen jederzeit zur Verfügung.'
+  },
+  zahlungserinnerung: {
+    label: 'Zahlungserinnerung',
+    subject: 'Zahlungserinnerung – Forest Code',
+    text: 'wir möchten Sie freundlich daran erinnern, dass die Rechnung für Ihr Projekt noch offen ist. Bitte überweisen Sie den fälligen Betrag auf unser Konto. Bei Fragen stehen wir Ihnen gerne zur Verfügung.'
+  },
+  'angebots-nachfass': {
+    label: 'Angebots-Nachfass',
+    subject: 'Ihr Angebot von Forest Code – Noch Fragen?',
+    text: 'wir haben Ihnen vor einigen Tagen ein Angebot für Ihr Website-Projekt zugesendet. Haben Sie noch Fragen dazu? Wir beraten Sie gerne und stehen für Anpassungen zur Verfügung. Antworten Sie einfach auf diese E-Mail.'
+  },
+  'kundenportal-zugang': {
+    label: 'Kundenportal-Zugang',
+    subject: 'Ihr Zugang zum Kundenportal – Forest Code',
+    text: 'Ihr Projekt ist jetzt in Bearbeitung! Wir haben für Sie einen Zugang zu unserem Kundenportal erstellt, wo Sie den aktuellen Status Ihres Projekts jederzeit einsehen können.'
   }
 };
 
@@ -62,7 +77,7 @@ exports.handler = async function(event) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
 
-  var { name, email, status, customerId } = data;
+  var { name, email, status, customerId, invoiceNumber, amount, quoteNumber, tempPassword } = data;
   if (!email || !status) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Email und Status sind erforderlich' }) };
   }
@@ -95,7 +110,16 @@ exports.handler = async function(event) {
               '<p style="margin:0 0 4px;font-size:13px;color:#64748b">Aktueller Status</p>' +
               '<p style="margin:0;font-size:18px;font-weight:bold;color:#2563eb">' + msg.label + '</p>' +
               (customerId ? '<p style="margin:4px 0 0;font-size:12px;color:#94a3b8">Referenz: ' + customerId + '</p>' : '') +
+              (invoiceNumber ? '<p style="margin:8px 0 0;font-size:14px;color:#334155">Rechnung: <strong>' + invoiceNumber + '</strong>' + (amount ? ' — ' + Number(amount).toLocaleString('de-DE') + ' €' : '') + '</p>' : '') +
+              (quoteNumber ? '<p style="margin:8px 0 0;font-size:14px;color:#334155">Angebot: <strong>' + quoteNumber + '</strong>' + (amount ? ' — ' + Number(amount).toLocaleString('de-DE') + ' €' : '') + '</p>' : '') +
             '</div>' +
+            (tempPassword ? '<div style="margin:0 0 24px;padding:16px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px">' +
+              '<p style="margin:0 0 8px;font-size:14px;font-weight:600;color:#065f46">Ihre Zugangsdaten:</p>' +
+              '<p style="margin:0;font-size:14px;color:#334155"><strong>E-Mail:</strong> ' + email + '</p>' +
+              '<p style="margin:0;font-size:14px;color:#334155"><strong>Passwort:</strong> ' + tempPassword + '</p>' +
+              '<p style="margin:8px 0 0;font-size:13px;color:#64748b">Bitte ändern Sie Ihr Passwort nach der ersten Anmeldung.</p>' +
+              '<a href="https://forestcode.de/dashboard.html?portal=1" style="display:inline-block;margin-top:12px;padding:10px 20px;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">Zum Kundenportal</a>' +
+            '</div>' : '') +
             '<p style="font-size:15px;color:#334155">Bei Fragen erreichen Sie uns jederzeit unter <a href="mailto:' + OWNER_EMAIL + '" style="color:#2563eb">' + OWNER_EMAIL + '</a>.</p>' +
             '<p style="font-size:15px;color:#334155">Mit freundlichen Grüßen,<br><strong>Ihr Forest Code Team</strong></p>' +
             '<hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0">' +

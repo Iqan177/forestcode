@@ -215,30 +215,6 @@
                     </div>
                 </div>
 
-                <!-- Erweiterte KPIs -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-                    <div class="stat-card">
-                        <div class="text-sm text-slate-500 mb-1">Konversionsrate</div>
-                        <div id="statConversion" class="text-2xl font-bold text-purple-600">0 %</div>
-                        <div class="text-xs text-slate-400 mt-1">Anfrage → Auftrag</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="text-sm text-slate-500 mb-1">Ø Durchlaufzeit</div>
-                        <div id="statLeadTime" class="text-2xl font-bold text-cyan-600">– Tage</div>
-                        <div class="text-xs text-slate-400 mt-1">Anfrage → Abgenommen</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="text-sm text-slate-500 mb-1">Abo-Quote</div>
-                        <div id="statAboRate" class="text-2xl font-bold text-emerald-600">0 %</div>
-                        <div class="text-xs text-slate-400 mt-1">Abgeschlossen mit Abo</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="text-sm text-slate-500 mb-1">Offene Rechnungen</div>
-                        <div id="statOpenInvoices" class="text-2xl font-bold text-red-500">0 €</div>
-                        <div class="text-xs text-slate-400 mt-1">Unbezahlte Forderungen</div>
-                    </div>
-                </div>
-
                 <!-- Recent Inquiries -->
                 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
                     <div class="p-5 border-b border-slate-100 flex items-center justify-between">
@@ -718,8 +694,7 @@ async function loadInquiries() {
             referenceWebsites: r.reference_websites, message: r.message,
             summary: r.summary, basePrice: r.base_price, featurePrice: r.feature_price,
             totalPrice: r.total_price, status: r.status, source: r.source,
-            createdAt: r.created_at, statusChangedAt: r.status_changed_at,
-            notes: r.notes || '', correctionRounds: r.correction_rounds || 0, aboChangesUsed: r.abo_changes_used || 0
+            createdAt: r.created_at, statusChangedAt: r.status_changed_at
         };
     });
 }
@@ -866,36 +841,6 @@ function updateStats() {
     document.getElementById('statProgress').textContent = prog;
     document.getElementById('statDone').textContent = done;
     document.getElementById('statRevenue').textContent = revenue.toLocaleString('de-DE') + ' €';
-
-    // Erweiterte KPIs
-    // 1. Konversionsrate: Aufträge (ab bearbeitung) / Alle Anfragen
-    var total = inqs.length;
-    var converted = inqs.filter(function(i){ return i.status !== 'neu'; }).length;
-    var convRate = total > 0 ? Math.round((converted / total) * 100) : 0;
-    document.getElementById('statConversion').textContent = convRate + ' %';
-
-    // 2. Durchschnittliche Durchlaufzeit (Anfrage → Abgenommen)
-    var completed = inqs.filter(function(i){ return i.status === 'abgenommen' && i.createdAt && i.statusChangedAt; });
-    if (completed.length > 0) {
-        var totalDays = completed.reduce(function(sum, i) {
-            var days = (new Date(i.statusChangedAt) - new Date(i.createdAt)) / (1000 * 60 * 60 * 24);
-            return sum + days;
-        }, 0);
-        var avgDays = Math.round(totalDays / completed.length);
-        document.getElementById('statLeadTime').textContent = avgDays + ' Tage';
-    } else {
-        document.getElementById('statLeadTime').textContent = '– Tage';
-    }
-
-    // 3. Abo-Quote: Projekte mit Service-Modell (Pro/Max) / Alle abgeschlossenen Projekte
-    var abgeschlossen = inqs.filter(function(i){ return i.status === 'abgeschlossen' || i.status === 'bezahlt' || i.status === 'abgenommen'; }).length;
-    var withAbo = inqs.filter(function(i){ return (i.status === 'abgeschlossen' || i.status === 'bezahlt' || i.status === 'abgenommen') && i.serviceModel && i.serviceModel.toLowerCase() !== 'starter'; }).length;
-    var aboRate = abgeschlossen > 0 ? Math.round((withAbo / abgeschlossen) * 100) : 0;
-    document.getElementById('statAboRate').textContent = Math.min(aboRate, 100) + ' %';
-
-    // 4. Offene Rechnungen
-    var openInvoices = crmData.invoices.filter(function(inv){ return !inv.paid; }).reduce(function(sum, inv){ return sum + inv.amount; }, 0);
-    document.getElementById('statOpenInvoices').textContent = openInvoices.toLocaleString('de-DE') + ' €';
 }
 
 // ==================== RECENT TABLE ====================
@@ -1262,34 +1207,6 @@ function openDetail(id) {
                 '<button onclick="addCustomService(\'' + inq.id + '\')" class="btn-primary text-xs px-3 py-1.5">Hinzufügen</button>' +
             '</div>' +
         '</div>' +
-        '<div class="mb-6 border border-slate-200 rounded-xl overflow-hidden">' +
-            '<div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">' +
-                '<div class="flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg><span class="text-sm font-semibold text-navy-900">Korrekturschleifen</span></div>' +
-                '<span class="text-xs font-medium ' + ((inq.correctionRounds || 0) >= 2 ? 'text-red-500' : 'text-green-600') + '">' + (inq.correctionRounds || 0) + ' / 2 inklusive</span>' +
-            '</div>' +
-            '<div class="p-4 flex items-center gap-3">' +
-                '<div class="flex-1">' +
-                    '<div class="flex gap-1">' +
-                        [1,2,3,4,5].map(function(n) {
-                            var active = n <= (inq.correctionRounds || 0);
-                            var overLimit = n > 2;
-                            var colorClass = active ? (overLimit ? 'bg-red-400' : 'bg-green-400') : 'bg-slate-200';
-                            return '<div class="h-2 flex-1 rounded-full ' + colorClass + '"></div>';
-                        }).join('') +
-                    '</div>' +
-                    ((inq.correctionRounds || 0) >= 2 ? '<p class="text-xs text-red-500 mt-2">⚠ Inklusiv-Kontingent aufgebraucht — weitere Schleifen mit Aufpreis</p>' : '<p class="text-xs text-slate-400 mt-2">Noch ' + (2 - (inq.correctionRounds || 0)) + ' kostenlose Schleife(n) verfügbar</p>') +
-                '</div>' +
-                '<div class="flex gap-1">' +
-                    '<button onclick="updateCorrectionRounds(\'' + inq.id + '\', -1)" class="w-8 h-8 rounded-lg border border-slate-300 flex items-center justify-center text-slate-600 hover:bg-slate-100 text-lg font-bold">−</button>' +
-                    '<button onclick="updateCorrectionRounds(\'' + inq.id + '\', 1)" class="w-8 h-8 rounded-lg border border-slate-300 flex items-center justify-center text-slate-600 hover:bg-slate-100 text-lg font-bold">+</button>' +
-                '</div>' +
-            '</div>' +
-        '</div>' +
-        '<div class="mb-6">' +
-            '<label class="text-xs text-slate-500 block mb-1">Notizen / Gesprächsprotokoll</label>' +
-            '<textarea id="inquiryNotes" rows="4" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-y" placeholder="Gesprächsnotizen, Anforderungsänderungen, interne Hinweise…">' + esc(inq.notes || '') + '</textarea>' +
-            '<button onclick="saveNotes(\'' + inq.id + '\')" class="btn-secondary text-xs mt-2">Notizen speichern</button>' +
-        '</div>' +
                 '<div class="mb-6"><label class="text-xs text-slate-500 block mb-1">Status ändern</label>' +
             '<select id="statusSelect" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">' +
                 statusOptions.map(function(s) { return '<option value="' + s + '"' + (inq.status === s ? ' selected' : '') + '>' + statusLabels[s] + '</option>'; }).join('') +
@@ -1327,25 +1244,6 @@ async function updateInquiryStatus(id) {
     }
     await refreshAll();
     closeModal();
-}
-
-async function saveNotes(id) {
-    var notes = document.getElementById('inquiryNotes').value;
-    var res = await sb.from('inquiries').update({ notes: notes }).eq('id', id);
-    if (res.error) { alert('Fehler beim Speichern: ' + (res.error.message || JSON.stringify(res.error))); return; }
-    var inq = crmData.inquiries.find(function(i) { return i.id === id; });
-    if (inq) inq.notes = notes;
-    alert('Notizen gespeichert ✓');
-}
-
-async function updateCorrectionRounds(id, delta) {
-    var inq = crmData.inquiries.find(function(i) { return i.id === id; });
-    if (!inq) return;
-    var newVal = Math.max(0, (inq.correctionRounds || 0) + delta);
-    var res = await sb.from('inquiries').update({ correction_rounds: newVal }).eq('id', id);
-    if (res.error) { alert('Fehler: ' + (res.error.message || JSON.stringify(res.error))); return; }
-    inq.correctionRounds = newVal;
-    openDetail(id); // Refresh modal
 }
 
 async function deleteInquiry(id) {
@@ -1803,32 +1701,6 @@ function viewContract(id) {
             '</div>' +
             '</div>' +
         '</div>' +
-        (function() {
-            var si = getServiceInfo(inq.serviceModel);
-            if (!si.hasSubscription) return '';
-            var maxCh = si.label.indexOf('Premium') > -1 ? 1 : 6;
-            var used = inq.aboChangesUsed || 0;
-            var rem = Math.max(0, maxCh - used);
-            var chType = si.label.indexOf('Premium') > -1 ? 'Überarbeitung' : 'Änderungen';
-            var barPct = maxCh > 0 ? Math.min(100, Math.round((used / maxCh) * 100)) : 0;
-            var barCol = rem === 0 ? '#ef4444' : rem <= 1 ? '#f59e0b' : '#22c55e';
-            return '<div class="mt-4 p-4 bg-white border border-slate-200 rounded-xl">' +
-                '<div class="flex items-center justify-between mb-3">' +
-                    '<div class="flex items-center gap-2"><svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>' +
-                    '<span class="text-sm font-semibold text-navy-900">Abo-Kontingent (' + si.label + ')</span></div>' +
-                    '<span class="text-xs font-medium ' + (rem === 0 ? 'text-red-500' : 'text-green-600') + '">' + used + ' / ' + maxCh + ' ' + chType + '</span>' +
-                '</div>' +
-                '<div class="w-full bg-slate-200 rounded-full h-2.5 mb-2">' +
-                    '<div style="width:' + barPct + '%;background:' + barCol + ';" class="h-2.5 rounded-full transition-all"></div>' +
-                '</div>' +
-                (rem > 0 ? '<p class="text-xs text-slate-500">Noch ' + rem + ' ' + chType + ' im aktuellen Jahr verfügbar</p>' : '<p class="text-xs text-red-500 font-medium">\u26a0 Kontingent aufgebraucht \u2014 weitere ' + chType + ' gegen Aufpreis</p>') +
-                '<div class="flex gap-2 mt-3">' +
-                    '<button onclick="updateAboChanges(\'' + inq.id + '\', 1)" class="px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg text-xs font-medium transition-colors">+ \u00c4nderung verbraucht</button>' +
-                    '<button onclick="updateAboChanges(\'' + inq.id + '\', -1)" class="px-3 py-1.5 border border-slate-300 hover:bg-slate-100 text-slate-600 rounded-lg text-xs font-medium transition-colors">\u2212 Korrektur</button>' +
-                    '<button onclick="resetAboChanges(\'' + inq.id + '\')" class="px-3 py-1.5 border border-slate-300 hover:bg-slate-100 text-slate-600 rounded-lg text-xs font-medium transition-colors ml-auto">Z\u00e4hler zur\u00fccksetzen</button>' +
-                '</div>' +
-            '</div>';
-        })() +
         '<div class="flex gap-3 mt-6 justify-end">' +
             '<button onclick="printContract()" class="btn-secondary text-sm">\ud83d\udda8\ufe0f Drucken / PDF</button>' +
             '<button onclick="closeContractModal()" class="btn-primary text-sm">Schließen</button>' +
@@ -1847,26 +1719,6 @@ function printContract() {
     win.document.write('<!DOCTYPE html><html><head><title>Vertrag</title><style>body{font-family:Inter,system-ui,sans-serif;color:#1e293b;padding:30px 40px;max-width:800px;margin:auto}table{width:100%;border-collapse:collapse}th,td{padding:8px 12px;text-align:left}@media print{body{padding:20px}}</style></head><body>' + content + '</body></html>');
     win.document.close();
     setTimeout(function() { win.print(); }, 500);
-}
-
-// ==================== ABO CHANGES COUNTER ====================
-async function updateAboChanges(id, delta) {
-    var inq = crmData.inquiries.find(function(i) { return i.id === id; });
-    if (!inq) return;
-    var newVal = Math.max(0, (inq.aboChangesUsed || 0) + delta);
-    var res = await sb.from('inquiries').update({ abo_changes_used: newVal }).eq('id', id);
-    if (res.error) { alert('Fehler: ' + (res.error.message || JSON.stringify(res.error))); return; }
-    inq.aboChangesUsed = newVal;
-    viewContract(id);
-}
-
-async function resetAboChanges(id) {
-    if (!confirm('Abo-Zähler wirklich zurücksetzen? (z.B. bei neuem Vertragsjahr)')) return;
-    var res = await sb.from('inquiries').update({ abo_changes_used: 0 }).eq('id', id);
-    if (res.error) { alert('Fehler: ' + (res.error.message || JSON.stringify(res.error))); return; }
-    var inq = crmData.inquiries.find(function(i) { return i.id === id; });
-    if (inq) inq.aboChangesUsed = 0;
-    viewContract(id);
 }
 
 // ==================== OPTIONAL SERVICES ====================
