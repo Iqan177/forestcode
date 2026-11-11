@@ -44,6 +44,21 @@ var statusMessages = {
     label: 'Kundenportal-Zugang',
     subject: 'Ihr Zugang zum Kundenportal – Forest Code',
     text: 'Ihr Projekt ist jetzt in Bearbeitung! Wir haben für Sie einen Zugang zu unserem Kundenportal erstellt, wo Sie den aktuellen Status Ihres Projekts jederzeit einsehen können.'
+  },
+  terminbestaetigung: {
+    label: 'Terminbestätigung',
+    subject: 'Ihr Termin bei Forest Code – Bestätigung',
+    text: 'Ihr Termin wurde erfolgreich gebucht. Wir freuen uns auf das Gespräch mit Ihnen!'
+  },
+  terminerinnerung: {
+    label: 'Termin-Erinnerung',
+    subject: 'Erinnerung: Morgen Ihr Termin bei Forest Code',
+    text: 'wir möchten Sie an Ihren morgen stattfindenden Termin erinnern. Wir freuen uns auf das Gespräch mit Ihnen!'
+  },
+  frist_erinnerung: {
+    label: 'Frist-Erinnerung',
+    subject: 'Erinnerung: Frist läuft bald ab – Forest Code',
+    text: 'eine Frist in Ihrem Projekt steht bevor. Bitte beachten Sie den Termin.'
   }
 };
 
@@ -77,7 +92,7 @@ exports.handler = async function(event) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
 
-  var { name, email, status, customerId, invoiceNumber, amount, quoteNumber, tempPassword } = data;
+  var { name, email, status, customerId, invoiceNumber, amount, quoteNumber, tempPassword, appointmentDate, appointmentTime, appointmentType } = data;
   if (!email || !status) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Email und Status sind erforderlich' }) };
   }
@@ -112,6 +127,8 @@ exports.handler = async function(event) {
               (customerId ? '<p style="margin:4px 0 0;font-size:12px;color:#94a3b8">Referenz: ' + customerId + '</p>' : '') +
               (invoiceNumber ? '<p style="margin:8px 0 0;font-size:14px;color:#334155">Rechnung: <strong>' + invoiceNumber + '</strong>' + (amount ? ' — ' + Number(amount).toLocaleString('de-DE') + ' €' : '') + '</p>' : '') +
               (quoteNumber ? '<p style="margin:8px 0 0;font-size:14px;color:#334155">Angebot: <strong>' + quoteNumber + '</strong>' + (amount ? ' — ' + Number(amount).toLocaleString('de-DE') + ' €' : '') + '</p>' : '') +
+              (appointmentDate ? '<p style="margin:8px 0 0;font-size:14px;color:#334155">📅 Termin: <strong>' + appointmentDate + '</strong>' + (appointmentTime ? ' um <strong>' + appointmentTime + ' Uhr</strong>' : '') + '</p>' : '') +
+              (appointmentType ? '<p style="margin:4px 0 0;font-size:13px;color:#64748b">Art: ' + appointmentType + '</p>' : '') +
             '</div>' +
             (tempPassword ? '<div style="margin:0 0 24px;padding:16px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px">' +
               '<p style="margin:0 0 8px;font-size:14px;font-weight:600;color:#065f46">Ihre Zugangsdaten:</p>' +

@@ -149,6 +149,11 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 Rechnungen
             </a>
+            <a class="sidebar-link" data-view="quotes" onclick="switchView('quotes')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                Angebote
+            </a>
+
             <a class="sidebar-link" data-view="contracts" onclick="switchView('contracts')">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                 Verträge
@@ -160,6 +165,10 @@
             <a class="sidebar-link" data-view="emails" onclick="switchView('emails')">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 E-Mails
+            </a>
+            <a class="sidebar-link" data-view="appointments" onclick="switchView('appointments')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Termine
             </a>
         </nav>
         <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700/50">
@@ -185,6 +194,8 @@
                 </button>
                 <h1 id="pageTitle" class="text-lg font-heading font-bold text-navy-900">Übersicht</h1>
             </div>
+            <div id="reminderBanner"></div>
+
             <div class="flex items-center gap-3">
                 <button onclick="openNewInquiry()" class="btn-primary text-sm">+ Neue Anfrage</button>
             </div>
@@ -381,6 +392,36 @@
                         <tbody id="contractTableBody">
                             <tr><td colspan="8" class="text-center text-slate-400 py-8">Noch keine Verträge vorhanden</td></tr>
                         </tbody>
+
+            <!-- ========= QUOTES VIEW ========= -->
+            <div id="view-quotes" class="hidden">
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
+                        <h2 class="font-heading font-bold text-navy-900">Angebote</h2>
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <input type="text" id="quoteSearch" oninput="renderQuotes()" placeholder="Suche nach Kunden oder Angebots-Nr." class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Angebots-Nr.</th>
+                                <th>Kunde</th>
+                                <th>Betrag</th>
+                                <th>Datum</th>
+                                <th>Gueltig bis</th>
+                                <th>Status</th>
+                                <th>Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quoteTableBody">
+                            <tr><td colspan="7" class="text-center text-slate-400 py-8">Noch keine Angebote vorhanden</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
                     </table>
                 </div>
             </div>
@@ -513,11 +554,189 @@
 </div>
 
 <!-- ==================== INVOICE MODAL ==================== -->
+<!-- ===== APPOINTMENT MODAL ===== -->
+<div id="appointmentModal" class="modal-overlay" onclick="if(event.target===this)closeAppointmentModal()">
+    <div class="modal-container max-w-lg">
+        <div class="modal-header">
+            <h3 class="text-lg font-bold text-navy-900" id="appointmentModalTitle">Neuer Termin</h3>
+            <button onclick="closeAppointmentModal()" class="text-slate-400 hover:text-slate-600 text-xl">×</button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Datum</label>
+                    <input type="date" id="apptDate" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Uhrzeit</label>
+                    <input type="time" id="apptTime" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">Kunde</label>
+                <select id="apptCustomer" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="">Kunde wählen...</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">Termintyp</label>
+                <select id="apptType" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="erstgespraech">Erstgespräch</option>
+                    <option value="beratung">Beratung</option>
+                    <option value="designreview">Design-Review</option>
+                    <option value="abnahme">Abnahme</option>
+                    <option value="support">Support</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">Dauer (Minuten)</label>
+                <select id="apptDuration" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="15">15 Min</option>
+                    <option value="30" selected>30 Min</option>
+                    <option value="45">45 Min</option>
+                    <option value="60">60 Min</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">Notizen</label>
+                <textarea id="apptNotes" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Optionale Notizen zum Termin..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeAppointmentModal()" class="px-5 py-2.5 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition">Abbrechen</button>
+            <button onclick="saveAppointment()" class="px-5 py-2.5 bg-brand-500 text-white rounded-lg text-sm hover:bg-brand-600 transition">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== DEADLINE MODAL ===== -->
+<div id="deadlineModal" class="modal-overlay" onclick="if(event.target===this)closeDeadlineModal()">
+    <div class="modal-container max-w-lg">
+        <div class="modal-header">
+            <h3 class="text-lg font-bold text-navy-900">Neue Frist / Erinnerung</h3>
+            <button onclick="closeDeadlineModal()" class="text-slate-400 hover:text-slate-600 text-xl">×</button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">Bezeichnung</label>
+                <input type="text" id="deadlineTitle" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="z.B. Design-Entwurf abliefern">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Fällig am</label>
+                    <input type="date" id="deadlineDate" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Priorität</label>
+                    <select id="deadlinePriority" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="normal">Normal</option>
+                        <option value="hoch">Hoch</option>
+                        <option value="kritisch">Kritisch</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">Verknüpfte Anfrage</label>
+                <select id="deadlineInquiry" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="">Keine Verknüpfung</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">Erinnerung</label>
+                <select id="deadlineReminder" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="0">Keine Erinnerung</option>
+                    <option value="1" selected>1 Tag vorher</option>
+                    <option value="3">3 Tage vorher</option>
+                    <option value="7">7 Tage vorher</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeDeadlineModal()" class="px-5 py-2.5 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition">Abbrechen</button>
+            <button onclick="saveDeadline()" class="px-5 py-2.5 bg-brand-500 text-white rounded-lg text-sm hover:bg-brand-600 transition">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== PAYMENT LINK MODAL ===== -->
+<div id="paymentLinkModal" class="modal-overlay" onclick="if(event.target===this)closePaymentLinkModal()">
+    <div class="modal-container max-w-lg">
+        <div class="modal-header">
+            <h3 class="text-lg font-bold text-navy-900">Zahlungslink erstellen</h3>
+            <button onclick="closePaymentLinkModal()" class="text-slate-400 hover:text-slate-600 text-xl">×</button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">Rechnung</label>
+                <select id="paymentInvoice" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="">Rechnung wählen...</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">Zahlungsanbieter</label>
+                <select id="paymentProvider" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="paypal">PayPal</option>
+                    <option value="stripe">Stripe</option>
+                    <option value="ueberweisung">Überweisung</option>
+                </select>
+            </div>
+            <div id="paymentLinkResult" class="hidden bg-green-50 border border-green-200 rounded-lg p-4">
+                <p class="text-sm font-medium text-green-800 mb-2">Zahlungslink erstellt:</p>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="generatedPaymentLink" readonly class="flex-1 px-3 py-2 border border-green-300 rounded-lg text-sm bg-white">
+                    <button onclick="copyPaymentLink()" class="px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition">Kopieren</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closePaymentLinkModal()" class="px-5 py-2.5 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition">Schließen</button>
+            <button onclick="createPaymentLink()" class="px-5 py-2.5 bg-brand-500 text-white rounded-lg text-sm hover:bg-brand-600 transition">Link generieren</button>
+        </div>
+    </div>
+</div>
+
 <div id="invoiceModal" class="modal-overlay" onclick="if(event.target===this)closeInvoiceModal()">
     <div class="modal-panel" style="max-width: 850px;">
         <div id="invoiceModalContent"></div>
     </div>
 </div>
+
+<!-- ==================== QUOTE MODAL ==================== -->
+<div id="quoteModal" class="modal-overlay" onclick="if(event.target===this)closeQuoteModal()">
+    <div class="modal-panel" style="max-width:800px;">
+        <div id="quoteModalContent"></div>
+    </div>
+</div>
+
+<!-- ==================== CUSTOMER PORTAL LOGIN ==================== -->
+<div id="customerPortal" class="hidden" style="min-height:100vh;background:linear-gradient(135deg,#0b1121 0%,#1e3a5f 50%,#0b1121 100%);display:flex;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:16px;padding:40px;max-width:480px;width:100%;box-shadow:0 25px 50px rgba(0,0,0,0.25);">
+        <div style="text-align:center;margin-bottom:32px;">
+            <h1 style="font-size:24px;font-weight:700;color:#0b1121;margin-bottom:8px;">Kundenportal</h1>
+            <p style="color:#64748b;font-size:14px;">Forest Code - Ihr Projektstatus</p>
+        </div>
+        <div id="customerLoginForm">
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:13px;font-weight:500;color:#374151;margin-bottom:6px;">E-Mail</label>
+                <input type="email" id="customerEmail" class="w-full px-4 py-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="ihre@email.de">
+            </div>
+            <div style="margin-bottom:24px;">
+                <label style="display:block;font-size:13px;font-weight:500;color:#374151;margin-bottom:6px;">Passwort</label>
+                <input type="password" id="customerPassword" class="w-full px-4 py-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Ihr Passwort" onkeypress="if(event.key==='Enter')customerLogin()">
+            </div>
+            <div id="customerLoginError" class="hidden text-red-600 text-sm mb-3 p-3 bg-red-50 rounded-lg"></div>
+            <button onclick="customerLogin()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold rounded-lg hover:opacity-90 transition">Anmelden</button>
+            <p style="text-align:center;margin-top:16px;font-size:13px;color:#94a3b8;">
+                <a href="dashboard.html" style="color:#3b82f6;text-decoration:underline;">Admin-Login</a>
+            </p>
+        </div>
+        <div id="customerDashboard" class="hidden">
+            <div id="customerDashboardContent"></div>
+            <button onclick="customerLogout()" style="margin-top:24px;width:100%;padding:10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;color:#64748b;font-size:13px;cursor:pointer;">Abmelden</button>
+        </div>
+    </div>
+</div>
+
 
 <!-- ===== CONTRACT MODAL ===== -->
 <div id="contractModal" class="modal-overlay" onclick="if(event.target===this) closeContractModal()">
@@ -676,7 +895,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 // Local cache
-var crmData = { inquiries: [], invoices: [] };
+var crmData = { inquiries: [], invoices: [], quotes: [], appointments: [], deadlines: [], paymentLinks: [] };
 
 async function loadInquiries() {
     var res = await sb.from('inquiries').select('*').order('created_at', { ascending: false });
@@ -713,7 +932,7 @@ async function loadInvoices() {
 }
 
 async function loadAllData() {
-    await Promise.all([loadInquiries(), loadInvoices()]);
+    await Promise.all([loadInquiries(), loadInvoices(), loadQuotes(), loadAppointments(), loadDeadlines(), loadPaymentLinks()]);
 }
 
 // ==================== AUTH (Supabase Auth) ====================
@@ -765,9 +984,441 @@ async function handleLogout() {
     }
 })();
 
+
+// ==================== QUOTES (ANGEBOTE) ====================
+async function loadQuotes() {
+    var res = await sb.from('quotes').select('*').order('created_at', { ascending: false });
+    if (res.error) { console.error('Load quotes error:', JSON.stringify(res.error)); return; }
+    crmData.quotes = (res.data || []).map(function(r) {
+        return {
+            id: r.id, number: r.number, inquiryId: r.inquiry_id,
+            customerId: r.customer_id, customerName: r.customer_name,
+            customerEmail: r.customer_email, amount: r.amount,
+            items: r.items || [], status: r.quote_status || 'offen',
+            validUntil: r.valid_until, createdAt: r.created_at,
+            followUpSent: r.follow_up_sent || false
+        };
+    });
+}
+
+function renderQuotes() {
+    var tbody = document.getElementById('quoteTableBody');
+    var searchEl = document.getElementById('quoteSearch');
+    var search = searchEl ? searchEl.value.toLowerCase().trim() : '';
+    var filtered = crmData.quotes || [];
+    if (search) {
+        filtered = filtered.filter(function(q) {
+            return (q.number && q.number.toLowerCase().indexOf(search) > -1) ||
+                   (q.customerName && q.customerName.toLowerCase().indexOf(search) > -1) ||
+                   (q.customerId && q.customerId.toLowerCase().indexOf(search) > -1);
+        });
+    }
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400 py-8">' + (search ? 'Keine Angebote gefunden' : 'Noch keine Angebote vorhanden') + '</td></tr>';
+        return;
+    }
+    tbody.innerHTML = filtered.slice().reverse().map(function(q) {
+        var statusMap = { offen: 'badge-new', angenommen: 'badge-paid', abgelehnt: 'badge-progress', abgelaufen: 'badge-progress' };
+        var statusLabels = { offen: 'Offen', angenommen: 'Angenommen', abgelehnt: 'Abgelehnt', abgelaufen: 'Abgelaufen' };
+        var validDate = q.validUntil ? formatDate(q.validUntil) : '–';
+        var isExpired = q.status === 'offen' && q.validUntil && new Date(q.validUntil) < new Date();
+        var displayStatus = isExpired ? 'abgelaufen' : q.status;
+        return '<tr>' +
+            '<td class="font-mono text-xs">' + q.number + '</td>' +
+            '<td class="font-medium">' + esc(q.customerName) + '</td>' +
+            '<td class="font-semibold">' + q.amount.toLocaleString('de-DE') + ' \u20ac</td>' +
+            '<td class="text-sm text-slate-500">' + formatDate(q.createdAt) + '</td>' +
+            '<td class="text-sm text-slate-500">' + validDate + '</td>' +
+            '<td><span class="badge ' + (statusMap[displayStatus] || 'badge-new') + '">' + (statusLabels[displayStatus] || displayStatus) + '</span></td>' +
+            '<td>' +
+                '<button onclick="viewQuote(\'' + q.id + '\')" class="text-brand-500 hover:underline text-sm">Anzeigen</button>' +
+                (q.status === 'offen' ? ' <button onclick="acceptQuote(\'' + q.id + '\')" class="text-green-600 hover:underline text-sm ml-2">Annehmen</button>' +
+                ' <button onclick="rejectQuote(\'' + q.id + '\')" class="text-red-500 hover:underline text-sm ml-1">Ablehnen</button>' : '') +
+            '</td>' +
+        '</tr>';
+    }).join('');
+}
+
+async function createQuoteFor(inquiryId) {
+    var inq = crmData.inquiries.find(function(i) { return i.id === inquiryId; });
+    if (!inq) return;
+    closeModal();
+
+    var amount = inq.totalPrice || 399;
+    if (!inq.totalPrice) {
+        if (inq.siteType === 'onepager') amount = 249;
+        else if (inq.siteType === 'premium') amount = 599;
+    }
+
+    var idRes = await sb.rpc('next_id', { counter_name: 'quote_id' });
+    if (idRes.error) { alert('Fehler bei Angebotsnummer: ' + (idRes.error.message || JSON.stringify(idRes.error))); return; }
+    var qNum = idRes.data || Date.now();
+    var qNumber = 'FC-A-' + String(qNum).padStart(4, '0');
+
+    var items = [];
+    var model = inq.serviceModel || 'basic';
+    var modelLabel = model === 'pro' ? 'Pro' : model === 'max' ? 'Max' : 'Einmalzahlung';
+    items.push({ desc: 'Website-Erstellung (' + modelLabel + ')', amount: amount });
+    if (model === 'pro') {
+        items.push({ desc: 'Service-Modell Pro, monatliche Abrechnung', amount: 45, note: 'Monatlich' });
+    } else if (model === 'max') {
+        items.push({ desc: 'Service-Modell Max, monatliche Abrechnung', amount: 70, note: 'Monatlich' });
+    }
+    if (inq.features) {
+        var featTotal = inq.featurePrice || 0;
+        if (typeof inq.features === 'string' && inq.features) {
+            items.push({ desc: 'Gebuchte Features: ' + inq.features, amount: featTotal, note: 'Im Paket enthalten' });
+        }
+    }
+
+    var validUntil = new Date();
+    validUntil.setDate(validUntil.getDate() + 14);
+
+    var res = await sb.from('quotes').insert({
+        number: qNumber,
+        inquiry_id: inquiryId,
+        customer_id: inq.customerId,
+        customer_name: inq.name,
+        customer_email: inq.email,
+        amount: amount,
+        items: items,
+        quote_status: 'offen',
+        valid_until: validUntil.toISOString()
+    }).select().single();
+    if (res.error) { alert('Fehler beim Erstellen des Angebots: ' + (res.error.message || JSON.stringify(res.error))); return; }
+
+    await loadQuotes();
+    switchView('quotes');
+    renderQuotes();
+    if (res.data) viewQuote(res.data.id);
+}
+
+function viewQuote(id) {
+    var q = (crmData.quotes || []).find(function(i) { return i.id === id; });
+    if (!q) return;
+    var today = new Date(q.createdAt);
+    var validDate = q.validUntil ? new Date(q.validUntil) : new Date(today.getTime() + 14*24*60*60*1000);
+
+    document.getElementById('quoteModalContent').innerHTML =
+        '<div id="quotePrintArea" class="invoice-preview" style="position:relative;min-height:900px;display:flex;flex-direction:column;padding:0;overflow:hidden;">' +
+            '<div style="background:linear-gradient(135deg,#0b1121 0%,#1e3a5f 60%,#2563eb 100%);padding:28px 32px 20px 32px;border-radius:0 0 12px 12px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">' +
+                '<div>' +
+                    '<img src="' + document.querySelector('#sidebar img').src + '" alt="Forest Code" style="height:60px;width:auto;display:block;">' +
+                '</div>' +
+                '<div style="text-align:right;">' +
+                    '<div style="font-size:24px;font-weight:700;color:#22d3ee;">ANGEBOT</div>' +
+                    '<div style="font-size:13px;color:#94a3b8;margin-top:4px;">' + q.number + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div style="font-size:11px;color:#94a3b8;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:8px;">' +
+                'mominSys UG (haftungsbeschr\u00e4nkt) \u00b7 Hammerwerkstr. 1 A \u00b7 79183 Waldkirch' +
+            '</div>' +
+            '</div>' +
+            '<div style="padding:24px 32px;flex:1;">' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:32px;">' +
+                '<div><div style="font-size:14px;line-height:1.7;">' +
+                    '<strong>' + esc(q.customerName) + '</strong><br>' +
+                    esc(q.customerEmail) + '<br>' +
+                    'Kunden-Nr.: ' + q.customerId +
+                '</div></div>' +
+                '<div style="text-align:right;font-size:13px;color:#64748b;line-height:1.8;">' +
+                    '<div><strong style="color:#1e293b;">Angebotsdatum:</strong> ' + formatDate(q.createdAt) + '</div>' +
+                    '<div><strong style="color:#1e293b;">G\u00fcltig bis:</strong> ' + formatDate(validDate.toISOString()) + '</div>' +
+                    '<div><strong style="color:#1e293b;">Kunden-Nr.:</strong> ' + q.customerId + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div style="margin-bottom:24px;">' +
+                '<div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Leistungsbeschreibung</div>' +
+                '<div style="font-size:13px;color:#475569;line-height:1.6;background:#f8fafc;border-radius:8px;padding:12px 16px;">' +
+                    'Erstellung einer professionellen Website gem\u00e4\u00df den vereinbarten Spezifikationen. Dieses Angebot umfasst Konzeption, Design, Entwicklung und Bereitstellung.' +
+                '</div>' +
+            '</div>' +
+            '<table style="width:100%;border-collapse:collapse;margin-bottom:24px;">' +
+                '<thead><tr style="border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 12px;font-size:11px;color:#64748b;text-transform:uppercase;">Pos.</th><th style="text-align:left;padding:8px 12px;font-size:11px;color:#64748b;text-transform:uppercase;">Beschreibung</th><th style="text-align:right;padding:8px 12px;font-size:11px;color:#64748b;text-transform:uppercase;">Betrag</th></tr></thead>' +
+                '<tbody>' +
+                    q.items.map(function(item, idx) {
+                        return '<tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:10px 12px;font-size:13px;color:#94a3b8;">' + (idx + 1) + '</td><td style="padding:10px 12px;font-size:13px;">' + esc(item.desc) + (item.note ? ' <span style="color:#94a3b8;font-style:italic;">(' + esc(item.note) + ')</span>' : '') + '</td><td style="padding:10px 12px;font-size:13px;text-align:right;">' + (item.amount > 0 ? item.amount.toLocaleString('de-DE') + ' \u20ac' : '\u2013') + '</td></tr>';
+                    }).join('') +
+                '</tbody>' +
+                '<tfoot><tr style="border-top:2px solid #0b1121;"><td></td><td style="padding:12px;font-weight:700;">Gesamtbetrag (netto)</td><td style="padding:12px;font-weight:700;text-align:right;font-size:16px;">' + q.items.reduce(function(s, it) { return s + (it.amount || 0); }, 0).toLocaleString('de-DE') + ' \u20ac</td></tr></tfoot>' +
+            '</table>' +
+            '<div style="font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px;margin-bottom:16px;line-height:1.6;">' +
+                'Gem\u00e4\u00df \u00a7 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung).<br>' +
+                'Dieses Angebot ist g\u00fcltig bis ' + formatDate(validDate.toISOString()) + '.<br>' +
+                'Es gelten unsere Allgemeinen Gesch\u00e4ftsbedingungen (AGB).' +
+            '</div>' +
+            '</div>' +
+            '<div style="background:linear-gradient(135deg,#0b1121 0%,#1e3a5f 60%,#2563eb 100%);padding:20px 32px 16px 32px;border-radius:12px 12px 0 0;margin-top:auto;">' +
+            '<div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:10px;color:#94a3b8;line-height:1.6;">' +
+                '<div><strong style="color:#cbd5e1;">mominSys UG (haftungsbeschr.)</strong><br>Hammerwerkstr. 1 A<br>79183 Waldkirch<br>info.forestcode@gmail.com</div>' +
+                '<div><strong style="color:#cbd5e1;">Registergericht</strong><br>Amtsgericht Freiburg<br>HRB 725099<br>GF: Musawar Khawaja</div>' +
+                '<div><strong style="color:#cbd5e1;">Bankverbindung</strong><br>Postbank<br>IBAN: DE 5241 0300 0432 2355<br>BIC: PBNKDEFFXXX</div>' +
+            '</div></div>' +
+        '</div>' +
+        '<div class="flex gap-3 mt-6 justify-end">' +
+            '<button onclick="printQuote()" class="btn-secondary text-sm">Drucken / PDF</button>' +
+            '<button onclick="closeQuoteModal()" class="btn-primary text-sm">Schlie\u00dfen</button>' +
+        '</div>';
+
+    document.getElementById('quoteModal').classList.add('active');
+}
+
+function closeQuoteModal() {
+    document.getElementById('quoteModal').classList.remove('active');
+}
+
+function printQuote() {
+    var content = document.getElementById('quotePrintArea').innerHTML;
+    var win = window.open('', '_blank');
+    win.document.write('<html><head><title>Angebot</title><style>body{font-family:Inter,system-ui,sans-serif;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}@media print{body{margin:0;}}</style></head><body>' + content + '</body></html>');
+    win.document.close();
+    setTimeout(function() { win.print(); }, 500);
+}
+
+async function acceptQuote(id) {
+    if (!confirm('Angebot als angenommen markieren?')) return;
+    var res = await sb.from('quotes').update({ quote_status: 'angenommen' }).eq('id', id);
+    if (res.error) { alert('Fehler: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    var q = (crmData.quotes || []).find(function(i) { return i.id === id; });
+    if (q) q.status = 'angenommen';
+    renderQuotes();
+}
+
+async function rejectQuote(id) {
+    if (!confirm('Angebot als abgelehnt markieren?')) return;
+    var res = await sb.from('quotes').update({ quote_status: 'abgelehnt' }).eq('id', id);
+    if (res.error) { alert('Fehler: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    var q = (crmData.quotes || []).find(function(i) { return i.id === id; });
+    if (q) q.status = 'abgelehnt';
+    renderQuotes();
+}
+
+// ==================== ZAHLUNGSERINNERUNG ====================
+async function checkPaymentReminders() {
+    var now = new Date();
+    var fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
+    var reminderCount = 0;
+    var overdueInvoices = crmData.invoices.filter(function(inv) {
+        if (inv.paid) return false;
+        var created = new Date(inv.createdAt);
+        return (now - created) >= fourteenDaysMs;
+    });
+    if (overdueInvoices.length > 0) {
+        var names = overdueInvoices.map(function(inv) { return inv.number + ' (' + esc(inv.customerName) + ')'; }).join(', ');
+        document.getElementById('reminderBanner').innerHTML =
+            '<div class="p-3 bg-amber-50 border border-amber-200 rounded-lg mb-4 flex items-center gap-3">' +
+                '<svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>' +
+                '<span class="text-sm text-amber-800"><strong>Zahlungserinnerung:</strong> ' + overdueInvoices.length + ' Rechnung(en) sind seit 14+ Tagen unbezahlt: ' + names + '</span>' +
+                '<button onclick="sendPaymentReminders()" class="ml-auto px-3 py-1 bg-amber-500 text-white text-xs font-medium rounded-lg hover:bg-amber-600">Erinnerung senden</button>' +
+            '</div>';
+    } else {
+        document.getElementById('reminderBanner').innerHTML = '';
+    }
+}
+
+async function sendPaymentReminders() {
+    var now = new Date();
+    var fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
+    var overdueInvoices = crmData.invoices.filter(function(inv) {
+        if (inv.paid) return false;
+        var created = new Date(inv.createdAt);
+        return (now - created) >= fourteenDaysMs;
+    });
+    for (var i = 0; i < overdueInvoices.length; i++) {
+        var inv = overdueInvoices[i];
+        try {
+            await fetch('/.netlify/functions/status-update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: inv.customerEmail,
+                    name: inv.customerName,
+                    customerId: inv.customerId,
+                    status: 'zahlungserinnerung',
+                    invoiceNumber: inv.number,
+                    amount: inv.amount
+                })
+            });
+        } catch(e) { console.error('Reminder failed for', inv.number, e); }
+    }
+    alert(overdueInvoices.length + ' Zahlungserinnerung(en) gesendet!');
+}
+
+// ==================== NACHFASS-ERINNERUNG (Angebote) ====================
+async function checkQuoteFollowUps() {
+    var now = new Date();
+    var sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    var openQuotes = (crmData.quotes || []).filter(function(q) {
+        if (q.status !== 'offen' || q.followUpSent) return false;
+        var created = new Date(q.createdAt);
+        return (now - created) >= sevenDaysMs;
+    });
+    if (openQuotes.length > 0) {
+        var el = document.getElementById('reminderBanner');
+        var existing = el.innerHTML;
+        el.innerHTML = existing +
+            '<div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4 flex items-center gap-3">' +
+                '<svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>' +
+                '<span class="text-sm text-blue-800"><strong>Nachfass:</strong> ' + openQuotes.length + ' Angebot(e) seit 7+ Tagen ohne Antwort.</span>' +
+                '<button onclick="sendQuoteFollowUps()" class="ml-auto px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-lg hover:bg-blue-600">Nachfassen</button>' +
+            '</div>';
+    }
+}
+
+async function sendQuoteFollowUps() {
+    var now = new Date();
+    var sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    var openQuotes = (crmData.quotes || []).filter(function(q) {
+        if (q.status !== 'offen' || q.followUpSent) return false;
+        var created = new Date(q.createdAt);
+        return (now - created) >= sevenDaysMs;
+    });
+    for (var i = 0; i < openQuotes.length; i++) {
+        var q = openQuotes[i];
+        try {
+            await fetch('/.netlify/functions/status-update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: q.customerEmail,
+                    name: q.customerName,
+                    customerId: q.customerId,
+                    status: 'angebots-nachfass',
+                    quoteNumber: q.number,
+                    amount: q.amount
+                })
+            });
+            await sb.from('quotes').update({ follow_up_sent: true }).eq('id', q.id);
+            q.followUpSent = true;
+        } catch(e) { console.error('Follow-up failed for', q.number, e); }
+    }
+    alert(openQuotes.length + ' Nachfass-E-Mail(s) gesendet!');
+    checkQuoteFollowUps();
+}
+
+// ==================== KUNDENPORTAL ====================
+async function customerLogin() {
+    var email = document.getElementById('customerEmail').value.trim();
+    var pass = document.getElementById('customerPassword').value;
+    var errEl = document.getElementById('customerLoginError');
+    errEl.classList.add('hidden');
+    if (!email || !pass) { errEl.textContent = 'Bitte E-Mail und Passwort eingeben.'; errEl.classList.remove('hidden'); return; }
+
+    var res = await sb.auth.signInWithPassword({ email: email, password: pass });
+    if (res.error) { errEl.textContent = 'Anmeldung fehlgeschlagen: ' + res.error.message; errEl.classList.remove('hidden'); return; }
+
+    // Check if customer role
+    var user = res.data.user;
+    var meta = user.user_metadata || {};
+    if (meta.role === 'admin') {
+        // Redirect to admin dashboard
+        await sb.auth.signOut();
+        window.location.href = 'dashboard.html';
+        return;
+    }
+
+    // Show customer dashboard
+    document.getElementById('customerLoginForm').classList.add('hidden');
+    document.getElementById('customerDashboard').classList.remove('hidden');
+    await renderCustomerDashboard(email);
+}
+
+async function renderCustomerDashboard(email) {
+    var content = document.getElementById('customerDashboardContent');
+    // Load customer inquiries
+    var inqRes = await sb.from('inquiries').select('*').eq('email', email);
+    var invRes = await sb.from('invoices').select('*').eq('customer_email', email);
+    var qRes = await sb.from('quotes').select('*').eq('customer_email', email);
+
+    var inqs = inqRes.data || [];
+    var invs = invRes.data || [];
+    var quotes = qRes.data || [];
+
+    var statusLabels = { neu:'Erhalten', bearbeitung:'In Bearbeitung', abgeschlossen:'Fertiggestellt', bezahlt:'Bezahlt', abgenommen:'Abgenommen' };
+    var statusColors = { neu:'#6b7280', bearbeitung:'#2563eb', abgeschlossen:'#16a34a', bezahlt:'#8b5cf6', abgenommen:'#06b6d4' };
+
+    var html = '<h2 style="font-size:20px;font-weight:700;color:#0b1121;margin-bottom:20px;">Willkommen!</h2>';
+
+    if (inqs.length === 0) {
+        html += '<p style="color:#94a3b8;text-align:center;padding:24px;">Keine Projekte gefunden.</p>';
+    } else {
+        html += '<h3 style="font-size:14px;font-weight:600;color:#374151;margin-bottom:12px;">Ihre Projekte</h3>';
+        inqs.forEach(function(inq) {
+            var st = inq.status || 'neu';
+            html += '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:12px;">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+                    '<span style="font-weight:600;color:#1e293b;">' + (inq.customer_id || '') + '</span>' +
+                    '<span style="font-size:12px;font-weight:600;color:' + (statusColors[st] || '#6b7280') + ';background:' + (statusColors[st] || '#6b7280') + '15;padding:4px 10px;border-radius:20px;">' + (statusLabels[st] || st) + '</span>' +
+                '</div>' +
+                '<div style="font-size:13px;color:#64748b;">Website: ' + (inq.site_type || '\u2013') + ' \u00b7 ' + (inq.service_model || '\u2013') + '</div>' +
+                (inq.total_price ? '<div style="font-size:13px;color:#64748b;margin-top:4px;">Betrag: ' + Number(inq.total_price).toLocaleString('de-DE') + ' \u20ac</div>' : '') +
+            '</div>';
+        });
+    }
+
+    if (invs.length > 0) {
+        html += '<h3 style="font-size:14px;font-weight:600;color:#374151;margin:20px 0 12px;">Ihre Rechnungen</h3>';
+        invs.forEach(function(inv) {
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;margin-bottom:8px;">' +
+                '<span style="font-family:monospace;font-size:13px;color:#475569;">' + (inv.number || '') + '</span>' +
+                '<span style="font-weight:600;font-size:13px;">' + Number(inv.amount).toLocaleString('de-DE') + ' \u20ac</span>' +
+                '<span style="font-size:12px;font-weight:600;color:' + (inv.paid ? '#16a34a' : '#ef4444') + ';">' + (inv.paid ? 'Bezahlt' : 'Offen') + '</span>' +
+            '</div>';
+        });
+    }
+
+    if (quotes.length > 0) {
+        html += '<h3 style="font-size:14px;font-weight:600;color:#374151;margin:20px 0 12px;">Ihre Angebote</h3>';
+        quotes.forEach(function(q) {
+            var qs = q.quote_status || 'offen';
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;margin-bottom:8px;">' +
+                '<span style="font-family:monospace;font-size:13px;color:#475569;">' + (q.number || '') + '</span>' +
+                '<span style="font-weight:600;font-size:13px;">' + Number(q.amount).toLocaleString('de-DE') + ' \u20ac</span>' +
+                '<span style="font-size:12px;font-weight:600;color:#6b7280;">' + qs.charAt(0).toUpperCase() + qs.slice(1) + '</span>' +
+            '</div>';
+        });
+    }
+
+    content.innerHTML = html;
+}
+
+function customerLogout() {
+    sb.auth.signOut();
+    document.getElementById('customerLoginForm').classList.remove('hidden');
+    document.getElementById('customerDashboard').classList.add('hidden');
+    document.getElementById('customerEmail').value = '';
+    document.getElementById('customerPassword').value = '';
+}
+
+// ==================== AUTO ACCOUNT CREATION (Phase 3) ====================
+async function createCustomerAccount(inq) {
+    // Called when status changes to "bearbeitung"
+    // Creates a Supabase Auth account for the customer
+    var tempPass = 'FC-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+    try {
+        var res = await fetch('/.netlify/functions/status-update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: inq.email,
+                name: inq.name,
+                customerId: inq.customerId,
+                status: 'kundenportal-zugang',
+                tempPassword: tempPass
+            })
+        });
+        // Store that account was created
+        await sb.from('inquiries').update({ customer_account_created: true }).eq('id', inq.id);
+    } catch(e) {
+        console.error('Customer account creation notification failed:', e);
+    }
+}
+
+
 // ==================== NAVIGATION ====================
 function switchView(view) {
-    var views = ['overview', 'pipeline', 'customers', 'invoices', 'contracts', 'emails', 'archive'];
+    var views = ['overview', 'pipeline', 'customers', 'invoices', 'quotes', 'contracts', 'emails', 'appointments', 'archive'];
     views.forEach(function(v) {
         document.getElementById('view-' + v).classList.toggle('hidden', v !== view);
     });
@@ -779,6 +1430,8 @@ function switchView(view) {
     if (view === 'pipeline') renderPipeline();
     if (view === 'customers') renderCustomers();
     if (view === 'invoices') renderInvoices();
+    if (view === 'quotes') renderQuotes();
+    if (view === 'appointments') { renderAppointments(); renderDeadlines(); renderPaymentLinks(); }
     if (view === 'contracts') renderContracts();
     if (view === 'emails') renderEmails();
     if (view === 'archive') renderArchive();
@@ -816,13 +1469,15 @@ async function refreshAll() {
     updateStats();
     renderRecentTable();
     // Re-render the currently active view
-    var views = ['pipeline', 'customers', 'invoices', 'contracts', 'emails', 'archive'];
+    var views = ['pipeline', 'customers', 'invoices', 'quotes', 'contracts', 'emails', 'archive'];
     views.forEach(function(v) {
         var el = document.getElementById('view-' + v);
         if (el && !el.classList.contains('hidden')) {
             if (v === 'pipeline') renderPipeline();
             if (v === 'customers') renderCustomers();
             if (v === 'invoices') renderInvoices();
+            if (v === 'quotes') renderQuotes();
+            if (v === 'appointments') { renderAppointments(); renderDeadlines(); renderPaymentLinks(); }
             if (v === 'contracts') renderContracts();
             if (v === 'emails') renderEmails();
             if (v === 'archive') renderArchive();
@@ -1214,6 +1869,7 @@ function openDetail(id) {
             '<button onclick="updateInquiryStatus(\'' + inq.id + '\')" class="btn-primary ml-3 text-sm">Speichern</button>' +
         '</div>' +
         '<div class="border-t border-slate-100 pt-4 flex gap-3">' +
+            '<button onclick="createQuoteFor(\'' + inq.id + '\')" class="btn-secondary text-sm">Angebot erstellen</button>' +
             '<button onclick="createInvoiceFor(\'' + inq.id + '\')" class="btn-secondary text-sm">Rechnung erstellen</button>' +
             '<button onclick="composeReply(\'' + inq.id + '\')" class="btn-primary text-sm">Antworten</button>' +
             '<button onclick="deleteInquiry(\'' + inq.id + '\')" class="text-red-500 hover:underline text-sm ml-auto">Löschen</button>' +
@@ -1870,6 +2526,516 @@ function generateId() {
     return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
 }
 
+// ==================== PHASE 4: TERMINBUCHUNG (Cal.com) ====================
+
+async function loadAppointments() {
+    var res = await sb.from('appointments').select('*').order('appointment_date', { ascending: true });
+    if (res.error) { console.error('Load appointments error:', JSON.stringify(res.error)); return; }
+    crmData.appointments = (res.data || []).map(function(r) {
+        return {
+            id: r.id, date: r.appointment_date, time: r.appointment_time,
+            customerName: r.customer_name, customerEmail: r.customer_email,
+            inquiryId: r.inquiry_id, type: r.appointment_type,
+            duration: r.duration_minutes, notes: r.notes,
+            status: r.status || 'geplant', createdAt: r.created_at
+        };
+    });
+}
+
+function renderAppointments() {
+    var tbody = document.getElementById('appointmentTableBody');
+    var appts = crmData.appointments || [];
+    // Load saved cal.com username
+    var savedCalcom = localStorage.getItem('fc_calcom_username') || '';
+    var calInput = document.getElementById('calcomUsername');
+    if (calInput && !calInput.value) calInput.value = savedCalcom;
+
+    if (appts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-400 py-8">Noch keine Termine vorhanden</td></tr>';
+        return;
+    }
+    var today = new Date().toISOString().split('T')[0];
+    tbody.innerHTML = appts.map(function(a) {
+        var isPast = a.date < today;
+        var typeLabels = { erstgespraech: 'Erstgespräch', beratung: 'Beratung', designreview: 'Design-Review', abnahme: 'Abnahme', support: 'Support' };
+        var statusMap = { geplant: 'badge-new', bestaetigt: 'badge-progress', abgeschlossen: 'badge-done', abgesagt: 'badge-paid' };
+        var statusLabels = { geplant: 'Geplant', bestaetigt: 'Bestätigt', abgeschlossen: 'Erledigt', abgesagt: 'Abgesagt' };
+        return '<tr class="' + (isPast ? 'opacity-50' : '') + '">' +
+            '<td class="font-medium">' + formatDate(a.date) + '</td>' +
+            '<td>' + (a.time || '–') + '</td>' +
+            '<td>' + esc(a.customerName) + '</td>' +
+            '<td class="text-sm">' + (typeLabels[a.type] || a.type) + '</td>' +
+            '<td><span class="badge ' + (statusMap[a.status] || 'badge-new') + '">' + (statusLabels[a.status] || a.status) + '</span></td>' +
+            '<td class="flex gap-1">' +
+                (a.status === 'geplant' ? '<button onclick="confirmAppointment(\'' + a.id + '\')" class="text-green-600 hover:underline text-xs">Bestätigen</button>' : '') +
+                (a.status !== 'abgesagt' && a.status !== 'abgeschlossen' ? ' <button onclick="cancelAppointment(\'' + a.id + '\')" class="text-red-500 hover:underline text-xs">Absagen</button>' : '') +
+                (a.status === 'bestaetigt' ? ' <button onclick="completeAppointment(\'' + a.id + '\')" class="text-brand-500 hover:underline text-xs">Erledigt</button>' : '') +
+            '</td>' +
+        '</tr>';
+    }).join('');
+}
+
+function openNewAppointment() {
+    // Populate customer dropdown
+    var sel = document.getElementById('apptCustomer');
+    sel.innerHTML = '<option value="">Kunde wählen...</option>';
+    var customers = [];
+    var seen = {};
+    (crmData.inquiries || []).forEach(function(inq) {
+        var key = inq.email || inq.name;
+        if (!seen[key]) {
+            seen[key] = true;
+            customers.push({ name: inq.name, email: inq.email, id: inq.id });
+        }
+    });
+    customers.forEach(function(c) {
+        sel.innerHTML += '<option value="' + c.id + '">' + esc(c.name) + ' (' + esc(c.email) + ')</option>';
+    });
+    // Set default date to tomorrow
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('apptDate').value = tomorrow.toISOString().split('T')[0];
+    document.getElementById('apptTime').value = '10:00';
+    document.getElementById('apptNotes').value = '';
+    document.getElementById('appointmentModal').classList.add('active');
+}
+
+function closeAppointmentModal() {
+    document.getElementById('appointmentModal').classList.remove('active');
+}
+
+async function saveAppointment() {
+    var date = document.getElementById('apptDate').value;
+    var time = document.getElementById('apptTime').value;
+    var customerId = document.getElementById('apptCustomer').value;
+    var type = document.getElementById('apptType').value;
+    var duration = parseInt(document.getElementById('apptDuration').value);
+    var notes = document.getElementById('apptNotes').value.trim();
+
+    if (!date || !time) { alert('Bitte Datum und Uhrzeit eingeben.'); return; }
+
+    var inq = crmData.inquiries.find(function(i) { return i.id === customerId; });
+    var customerName = inq ? inq.name : 'Unbekannt';
+    var customerEmail = inq ? inq.email : '';
+
+    var res = await sb.from('appointments').insert({
+        appointment_date: date,
+        appointment_time: time,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        inquiry_id: customerId || null,
+        appointment_type: type,
+        duration_minutes: duration,
+        notes: notes,
+        status: 'geplant'
+    });
+
+    if (res.error) { alert('Fehler beim Speichern: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    closeAppointmentModal();
+    await loadAppointments();
+    renderAppointments();
+
+    // Send confirmation email via Brevo
+    if (customerEmail) {
+        try {
+            var typeLabels = { erstgespraech: 'Erstgespräch', beratung: 'Beratung', designreview: 'Design-Review', abnahme: 'Abnahme', support: 'Support' };
+            await fetch('/.netlify/functions/status-update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: customerEmail,
+                    name: customerName,
+                    type: 'terminbestaetigung',
+                    appointmentDate: new Date(date).toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }),
+                    appointmentTime: time,
+                    appointmentType: typeLabels[type] || type
+                })
+            });
+        } catch(e) { console.error('Email send error:', e); }
+    }
+}
+
+async function confirmAppointment(id) {
+    await sb.from('appointments').update({ status: 'bestaetigt' }).eq('id', id);
+    await loadAppointments(); renderAppointments();
+}
+async function cancelAppointment(id) {
+    if (!confirm('Termin wirklich absagen?')) return;
+    await sb.from('appointments').update({ status: 'abgesagt' }).eq('id', id);
+    await loadAppointments(); renderAppointments();
+}
+async function completeAppointment(id) {
+    await sb.from('appointments').update({ status: 'abgeschlossen' }).eq('id', id);
+    await loadAppointments(); renderAppointments();
+}
+
+function saveCalcomSettings() {
+    var username = document.getElementById('calcomUsername').value.trim();
+    localStorage.setItem('fc_calcom_username', username);
+}
+
+function openCalcomBooking() {
+    var username = document.getElementById('calcomUsername').value.trim() || localStorage.getItem('fc_calcom_username') || '';
+    if (!username) { alert('Bitte zuerst einen Cal.com Benutzernamen eingeben.'); return; }
+    window.open('https://cal.com/' + username, '_blank');
+}
+
+// ==================== PHASE 4: ZAHLUNGSLINKS (Stripe/PayPal) ====================
+
+async function loadPaymentLinks() {
+    var res = await sb.from('payment_links').select('*').order('created_at', { ascending: false });
+    if (res.error) { console.error('Load payment_links error:', JSON.stringify(res.error)); return; }
+    crmData.paymentLinks = (res.data || []).map(function(r) {
+        return {
+            id: r.id, invoiceId: r.invoice_id, invoiceNumber: r.invoice_number,
+            customerName: r.customer_name, amount: r.amount,
+            provider: r.provider, link: r.payment_link,
+            createdAt: r.created_at
+        };
+    });
+    // Load saved payment settings
+    var paypalInput = document.getElementById('paypalMeLink');
+    var stripeInput = document.getElementById('stripeLinkPrefix');
+    if (paypalInput && !paypalInput.value) paypalInput.value = localStorage.getItem('fc_paypal_link') || '';
+    if (stripeInput && !stripeInput.value) stripeInput.value = localStorage.getItem('fc_stripe_prefix') || '';
+}
+
+function renderPaymentLinks() {
+    var tbody = document.getElementById('paymentLinksTableBody');
+    var links = crmData.paymentLinks || [];
+    if (links.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-400 py-8">Noch keine Zahlungslinks erstellt</td></tr>';
+        return;
+    }
+    tbody.innerHTML = links.map(function(pl) {
+        var providerLabel = { paypal: 'PayPal', stripe: 'Stripe', ueberweisung: 'Überweisung' };
+        return '<tr>' +
+            '<td class="font-mono text-xs">' + esc(pl.invoiceNumber) + '</td>' +
+            '<td>' + esc(pl.customerName) + '</td>' +
+            '<td class="font-semibold">' + (pl.amount ? pl.amount.toLocaleString('de-DE') + ' €' : '–') + '</td>' +
+            '<td><span class="badge badge-new">' + (providerLabel[pl.provider] || pl.provider) + '</span></td>' +
+            '<td class="text-sm text-slate-500">' + formatDate(pl.createdAt) + '</td>' +
+            '<td><button onclick="copyToClipboard(\'' + esc(pl.link) + '\')" class="text-brand-500 hover:underline text-xs">Link kopieren</button></td>' +
+        '</tr>';
+    }).join('');
+}
+
+function savePaymentSettings() {
+    var paypal = document.getElementById('paypalMeLink').value.trim();
+    var stripe = document.getElementById('stripeLinkPrefix').value.trim();
+    localStorage.setItem('fc_paypal_link', paypal);
+    localStorage.setItem('fc_stripe_prefix', stripe);
+}
+
+function generatePaymentLink() {
+    // Populate invoice dropdown
+    var sel = document.getElementById('paymentInvoice');
+    sel.innerHTML = '<option value="">Rechnung wählen...</option>';
+    (crmData.invoices || []).filter(function(inv) { return !inv.paid; }).forEach(function(inv) {
+        sel.innerHTML += '<option value="' + inv.id + '" data-amount="' + inv.amount + '" data-name="' + esc(inv.customerName) + '" data-number="' + esc(inv.number) + '">' + inv.number + ' – ' + esc(inv.customerName) + ' (' + inv.amount.toLocaleString('de-DE') + ' €)</option>';
+    });
+    document.getElementById('paymentLinkResult').classList.add('hidden');
+    document.getElementById('paymentLinkModal').classList.add('active');
+}
+
+function closePaymentLinkModal() {
+    document.getElementById('paymentLinkModal').classList.remove('active');
+}
+
+async function createPaymentLink() {
+    var sel = document.getElementById('paymentInvoice');
+    var opt = sel.options[sel.selectedIndex];
+    if (!sel.value) { alert('Bitte eine Rechnung wählen.'); return; }
+
+    var invoiceId = sel.value;
+    var amount = parseFloat(opt.getAttribute('data-amount'));
+    var customerName = opt.getAttribute('data-name');
+    var invoiceNumber = opt.getAttribute('data-number');
+    var provider = document.getElementById('paymentProvider').value;
+
+    var link = '';
+    if (provider === 'paypal') {
+        var paypalBase = localStorage.getItem('fc_paypal_link') || document.getElementById('paypalMeLink').value.trim();
+        if (!paypalBase) { alert('Bitte zuerst den PayPal.me Link in den Einstellungen hinterlegen.'); return; }
+        if (!paypalBase.startsWith('http')) paypalBase = 'https://' + paypalBase;
+        link = paypalBase + '/' + amount.toFixed(2) + 'EUR';
+    } else if (provider === 'stripe') {
+        var stripeBase = localStorage.getItem('fc_stripe_prefix') || document.getElementById('stripeLinkPrefix').value.trim();
+        if (!stripeBase) { alert('Bitte zuerst den Stripe Payment Link in den Einstellungen hinterlegen.'); return; }
+        if (!stripeBase.startsWith('http')) stripeBase = 'https://' + stripeBase;
+        link = stripeBase + '?prefilled_email=' + encodeURIComponent('');
+    } else {
+        // Überweisung — generate text reference
+        link = 'Überweisung: Verwendungszweck "' + invoiceNumber + '", Betrag ' + amount.toLocaleString('de-DE') + ' €';
+    }
+
+    // Save to DB
+    var res = await sb.from('payment_links').insert({
+        invoice_id: invoiceId,
+        invoice_number: invoiceNumber,
+        customer_name: customerName,
+        amount: amount,
+        provider: provider,
+        payment_link: link
+    });
+    if (res.error) { alert('Fehler: ' + (res.error.message || JSON.stringify(res.error))); return; }
+
+    // Show generated link
+    document.getElementById('generatedPaymentLink').value = link;
+    document.getElementById('paymentLinkResult').classList.remove('hidden');
+
+    await loadPaymentLinks();
+    renderPaymentLinks();
+}
+
+function copyPaymentLink() {
+    var link = document.getElementById('generatedPaymentLink').value;
+    copyToClipboard(link);
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        alert('Link in Zwischenablage kopiert!');
+    }).catch(function() {
+        prompt('Link kopieren:', text);
+    });
+}
+
+// ==================== PHASE 4: FRISTEN & ERINNERUNGEN ====================
+
+async function loadDeadlines() {
+    var res = await sb.from('deadlines').select('*').order('due_date', { ascending: true });
+    if (res.error) { console.error('Load deadlines error:', JSON.stringify(res.error)); return; }
+    crmData.deadlines = (res.data || []).map(function(r) {
+        return {
+            id: r.id, title: r.title, dueDate: r.due_date,
+            priority: r.priority || 'normal', inquiryId: r.inquiry_id,
+            inquiryName: r.inquiry_name, reminderDays: r.reminder_days || 1,
+            reminderSent: r.reminder_sent || false, completed: r.completed || false,
+            createdAt: r.created_at
+        };
+    });
+}
+
+function renderDeadlines() {
+    var container = document.getElementById('deadlinesList');
+    var deadlines = (crmData.deadlines || []).filter(function(d) { return !d.completed; });
+
+    if (deadlines.length === 0) {
+        container.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">Keine aktiven Fristen</p>';
+        return;
+    }
+
+    var today = new Date();
+    today.setHours(0,0,0,0);
+
+    container.innerHTML = deadlines.map(function(d) {
+        var due = new Date(d.dueDate);
+        due.setHours(0,0,0,0);
+        var daysLeft = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+        var isOverdue = daysLeft < 0;
+        var isUrgent = daysLeft <= 2 && daysLeft >= 0;
+
+        var priorityColors = {
+            normal: 'bg-blue-100 text-blue-700 border-blue-200',
+            hoch: 'bg-amber-100 text-amber-700 border-amber-200',
+            kritisch: 'bg-red-100 text-red-700 border-red-200'
+        };
+        var bgClass = isOverdue ? 'bg-red-50 border-red-300' : (isUrgent ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-200');
+
+        var daysText = isOverdue ? '<span class="text-red-600 font-bold">' + Math.abs(daysLeft) + ' Tag(e) überfällig</span>' :
+                       (daysLeft === 0 ? '<span class="text-amber-600 font-bold">Heute fällig!</span>' :
+                       '<span class="text-slate-600">' + daysLeft + ' Tag(e) verbleibend</span>');
+
+        return '<div class="flex items-center justify-between p-3 rounded-lg border ' + bgClass + ' mb-2">' +
+            '<div class="flex items-center gap-3">' +
+                '<button onclick="completeDeadline(\'' + d.id + '\')" class="w-5 h-5 rounded border-2 border-slate-300 hover:border-green-500 hover:bg-green-50 flex items-center justify-center transition" title="Erledigt">' +
+                    '<svg class="w-3 h-3 text-transparent hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' +
+                '</button>' +
+                '<div>' +
+                    '<div class="font-medium text-sm text-navy-900">' + esc(d.title) +
+                        (d.inquiryName ? ' <span class="text-xs text-slate-400">(' + esc(d.inquiryName) + ')</span>' : '') +
+                    '</div>' +
+                    '<div class="text-xs mt-0.5">' + daysText + ' · Fällig: ' + formatDate(d.dueDate) + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="flex items-center gap-2">' +
+                '<span class="text-xs px-2 py-0.5 rounded-full border ' + (priorityColors[d.priority] || priorityColors.normal) + '">' + d.priority + '</span>' +
+                '<button onclick="deleteDeadline(\'' + d.id + '\')" class="text-slate-400 hover:text-red-500 text-sm" title="Löschen">✕</button>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function openNewDeadline() {
+    // Populate inquiry dropdown
+    var sel = document.getElementById('deadlineInquiry');
+    sel.innerHTML = '<option value="">Keine Verknüpfung</option>';
+    (crmData.inquiries || []).forEach(function(inq) {
+        sel.innerHTML += '<option value="' + inq.id + '" data-name="' + esc(inq.name) + '">' + inq.customerId + ' – ' + esc(inq.name) + '</option>';
+    });
+    // Default to 7 days from now
+    var nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    document.getElementById('deadlineDate').value = nextWeek.toISOString().split('T')[0];
+    document.getElementById('deadlineTitle').value = '';
+    document.getElementById('deadlineModal').classList.add('active');
+}
+
+function closeDeadlineModal() {
+    document.getElementById('deadlineModal').classList.remove('active');
+}
+
+async function saveDeadline() {
+    var title = document.getElementById('deadlineTitle').value.trim();
+    var dueDate = document.getElementById('deadlineDate').value;
+    var priority = document.getElementById('deadlinePriority').value;
+    var inquirySel = document.getElementById('deadlineInquiry');
+    var inquiryId = inquirySel.value || null;
+    var inquiryName = inquirySel.options[inquirySel.selectedIndex] ? inquirySel.options[inquirySel.selectedIndex].getAttribute('data-name') || '' : '';
+    var reminderDays = parseInt(document.getElementById('deadlineReminder').value);
+
+    if (!title || !dueDate) { alert('Bitte Bezeichnung und Fälligkeitsdatum eingeben.'); return; }
+
+    var res = await sb.from('deadlines').insert({
+        title: title,
+        due_date: dueDate,
+        priority: priority,
+        inquiry_id: inquiryId,
+        inquiry_name: inquiryName,
+        reminder_days: reminderDays,
+        completed: false,
+        reminder_sent: false
+    });
+    if (res.error) { alert('Fehler: ' + (res.error.message || JSON.stringify(res.error))); return; }
+    closeDeadlineModal();
+    await loadDeadlines();
+    renderDeadlines();
+}
+
+async function completeDeadline(id) {
+    await sb.from('deadlines').update({ completed: true }).eq('id', id);
+    await loadDeadlines();
+    renderDeadlines();
+}
+
+async function deleteDeadline(id) {
+    if (!confirm('Frist wirklich löschen?')) return;
+    await sb.from('deadlines').delete().eq('id', id);
+    await loadDeadlines();
+    renderDeadlines();
+}
+
+// ==================== PHASE 4: AUTOMATISCHE TIMER ====================
+
+async function checkDeadlineReminders() {
+    var today = new Date();
+    today.setHours(0,0,0,0);
+    var deadlines = (crmData.deadlines || []).filter(function(d) {
+        if (d.completed || d.reminderSent || !d.reminderDays) return false;
+        var due = new Date(d.dueDate);
+        due.setHours(0,0,0,0);
+        var daysLeft = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+        return daysLeft <= d.reminderDays && daysLeft >= 0;
+    });
+
+    if (deadlines.length === 0) return;
+
+    // Show reminder banner in overview
+    var banner = document.getElementById('reminderBanner');
+    var existingHTML = banner.innerHTML || '';
+    var deadlineBanner = '<div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">' +
+        '<div class="flex items-center justify-between">' +
+            '<div class="flex items-center gap-2">' +
+                '<span class="text-amber-600">⏰</span>' +
+                '<span class="text-sm font-medium text-amber-800">' + deadlines.length + ' Frist(en) stehen bevor!</span>' +
+            '</div>' +
+            '<button onclick="switchView('appointments')" class="text-xs bg-amber-600 text-white px-3 py-1 rounded hover:bg-amber-700 transition">Anzeigen →</button>' +
+        '</div>' +
+        '<div class="mt-2 text-xs text-amber-700">' +
+            deadlines.map(function(d) {
+                var due = new Date(d.dueDate);
+                var daysLeft = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+                return '• ' + esc(d.title) + (daysLeft === 0 ? ' (HEUTE!)' : ' (in ' + daysLeft + ' Tag(en))');
+            }).join('<br>') +
+        '</div>' +
+    '</div>';
+    banner.innerHTML = existingHTML + deadlineBanner;
+}
+
+async function checkUpcomingAppointments() {
+    var today = new Date();
+    var tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    var todayStr = today.toISOString().split('T')[0];
+    var tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+    var upcoming = (crmData.appointments || []).filter(function(a) {
+        return (a.date === todayStr || a.date === tomorrowStr) && a.status !== 'abgesagt' && a.status !== 'abgeschlossen';
+    });
+
+    if (upcoming.length === 0) return;
+
+    var banner = document.getElementById('reminderBanner');
+    var existingHTML = banner.innerHTML || '';
+    var apptBanner = '<div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">' +
+        '<div class="flex items-center justify-between">' +
+            '<div class="flex items-center gap-2">' +
+                '<span class="text-blue-600">📅</span>' +
+                '<span class="text-sm font-medium text-blue-800">' + upcoming.length + ' Termin(e) heute/morgen</span>' +
+            '</div>' +
+            '<button onclick="switchView('appointments')" class="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition">Anzeigen →</button>' +
+        '</div>' +
+        '<div class="mt-2 text-xs text-blue-700">' +
+            upcoming.map(function(a) {
+                var isToday = a.date === todayStr;
+                return '• ' + (isToday ? 'HEUTE' : 'Morgen') + ' ' + a.time + ': ' + esc(a.customerName) + ' (' + a.type + ')';
+            }).join('<br>') +
+        '</div>' +
+    '</div>';
+    banner.innerHTML = existingHTML + apptBanner;
+}
+
+// Auto-expire overdue quotes
+async function checkExpiredQuotes() {
+    var today = new Date().toISOString();
+    var expired = (crmData.quotes || []).filter(function(q) {
+        return q.status === 'offen' && q.validUntil && new Date(q.validUntil) < new Date();
+    });
+    for (var i = 0; i < expired.length; i++) {
+        await sb.from('quotes').update({ quote_status: 'abgelaufen' }).eq('id', expired[i].id);
+    }
+    if (expired.length > 0) { await loadQuotes(); }
+}
+
+// Periodic automatic check (runs on load and every 5 minutes)
+async function runAutomaticTimers() {
+    try {
+        await checkDeadlineReminders();
+        await checkUpcomingAppointments();
+        await checkExpiredQuotes();
+    } catch(e) { console.error('Timer check error:', e); }
+}
+
+// ==================== OVERVIEW STATS: Add deadline + appointment counters ====================
+var _origRenderOverview = typeof renderOverview === 'function' ? renderOverview : null;
+
+function addPhase4Stats() {
+    // Add extra stats to overview
+    var statsGrid = document.querySelector('#view-overview .grid');
+    if (!statsGrid || document.getElementById('statDeadlines')) return;
+
+    var deadlineCount = (crmData.deadlines || []).filter(function(d) { return !d.completed; }).length;
+    var apptCount = (crmData.appointments || []).filter(function(a) {
+        var today = new Date().toISOString().split('T')[0];
+        return a.date >= today && a.status !== 'abgesagt';
+    }).length;
+
+    var extraStats = '<div class="stat-card"><div class="text-sm text-slate-500 mb-1">Offene Fristen</div><div id="statDeadlines" class="text-2xl font-bold text-amber-500">' + deadlineCount + '</div></div>' +
+        '<div class="stat-card"><div class="text-sm text-slate-500 mb-1">Anstehende Termine</div><div id="statAppointments" class="text-2xl font-bold text-blue-500">' + apptCount + '</div></div>';
+    statsGrid.insertAdjacentHTML('beforeend', extraStats);
+}
+
 // ==================== REALTIME SUBSCRIPTION ====================
 // Listen for new inquiries in real-time
 sb.channel('inquiries-changes')
@@ -1878,6 +3044,35 @@ sb.channel('inquiries-changes')
         refreshAll();
     })
     .subscribe();
+
+// Realtime for appointments
+sb.channel('appointments-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, function() { refreshAll(); })
+    .subscribe();
+
+// Realtime for deadlines
+sb.channel('deadlines-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'deadlines' }, function() { refreshAll(); })
+    .subscribe();
+
+// Realtime for payment_links
+sb.channel('paymentlinks-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'payment_links' }, function() { refreshAll(); })
+    .subscribe();
+
+// Run automatic timers on page load and every 5 minutes
+setTimeout(function() { runAutomaticTimers(); addPhase4Stats(); }, 2000);
+setInterval(function() { runAutomaticTimers(); }, 300000);
+
+// ==================== CUSTOMER PORTAL INIT ====================
+(function() {
+    if (window.location.search.indexOf('portal=1') > -1) {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('dashboardApp').classList.add('hidden');
+        document.getElementById('customerPortal').classList.remove('hidden');
+    }
+})();
+
 </script>
 
 </body>
