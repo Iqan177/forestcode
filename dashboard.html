@@ -1068,7 +1068,7 @@ async function createQuoteFor(inquiryId) {
 
     var idRes = await sb.rpc('next_id', { counter_name: 'quote_id' });
     if (idRes.error) { alert('Fehler bei Angebotsnummer: ' + (idRes.error.message || JSON.stringify(idRes.error))); return; }
-    var qNum = idRes.data || Date.now();
+    var qNum = idRes.data || Math.floor(Math.random() * 9000 + 1000);
     var qNumber = 'FC-A-' + String(qNum).padStart(4, '0');
 
     var items = [];
@@ -1941,8 +1941,8 @@ async function submitNewInquiry(e) {
     // Get next customer ID from Supabase
     var idRes = await sb.rpc('next_id', { counter_name: 'customer_id' });
     if (idRes.error) { alert('Fehler bei ID-Generierung: ' + (idRes.error.message || JSON.stringify(idRes.error))); return false; }
-    var custNum = idRes.data || Date.now();
-    var customerId = 'FC-' + custNum;
+    var custNum = idRes.data || Math.floor(Math.random() * 9000 + 1000);
+    var customerId = 'FC-K-' + String(custNum).padStart(4, '0');
 
     var res = await sb.from('inquiries').insert({
         customer_id: customerId,
@@ -1994,7 +1994,7 @@ async function createInvoiceFor(inquiryId) {
 
     var idRes = await sb.rpc('next_id', { counter_name: 'invoice_id' });
     if (idRes.error) { alert('Fehler bei Rechnungsnummer-Generierung: ' + (idRes.error.message || JSON.stringify(idRes.error))); return; }
-    var invNum = idRes.data || Date.now();
+    var invNum = idRes.data || Math.floor(Math.random() * 9000 + 1000);
     var invNumber = 'FC-R-' + String(invNum).padStart(4, '0');
 
     // Build detailed invoice items
