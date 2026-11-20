@@ -360,13 +360,128 @@
 
 <!-- ===== KONTAKT ===== -->
 <section id="kontakt" class="py-24 lg:py-32 bg-white">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center fade-up">
-        <span class="text-brand-500 font-semibold text-sm uppercase tracking-wider">Kontakt</span>
-        <h2 class="text-3xl sm:text-4xl font-heading font-bold text-navy-900 mt-3 mb-6">Sprechen Sie mit uns</h2>
-        <p class="text-slate-600 text-lg mb-10">Haben Sie spezielle Anforderungen oder Fragen? Dann wenden Sie sich an uns über diese Kontaktdaten.</p>
-        <div class="inline-flex items-center gap-4 bg-brand-50 border border-brand-100 rounded-xl px-8 py-5">
-            <div class="icon-circle"><svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
-            <div class="text-left"><p class="text-sm text-slate-400">E-Mail</p><a href="mailto:info.forestcode@gmail.com" class="text-navy-900 font-semibold text-lg hover:text-brand-500 transition-colors">info.forestcode@gmail.com</a></div>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 fade-up">
+        <div class="text-center mb-12">
+            <span class="text-brand-500 font-semibold text-sm uppercase tracking-wider">Kontakt</span>
+            <h2 class="text-3xl sm:text-4xl font-heading font-bold text-navy-900 mt-3 mb-4">Sprechen Sie mit uns</h2>
+            <p class="text-slate-600 text-lg max-w-2xl mx-auto">Vereinbaren Sie einen kostenlosen 15-Minuten-Rückruf – wir melden uns bei Ihnen zum gewünschten Termin.</p>
+        </div>
+        <div class="grid lg:grid-cols-5 gap-10">
+            <!-- Kontaktformular -->
+            <div class="lg:col-span-3">
+                <form id="kontaktForm" class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-5">
+                    <div>
+                        <label for="kontaktName" class="block text-sm font-semibold text-navy-900 mb-1.5">Name *</label>
+                        <input type="text" id="kontaktName" required placeholder="Ihr vollständiger Name" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-navy-900 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all">
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-5">
+                        <div>
+                            <label for="kontaktEmail" class="block text-sm font-semibold text-navy-900 mb-1.5">E-Mail *</label>
+                            <input type="email" id="kontaktEmail" required placeholder="ihre@email.de" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-navy-900 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label for="kontaktTel" class="block text-sm font-semibold text-navy-900 mb-1.5">Telefon *</label>
+                            <input type="tel" id="kontaktTel" required placeholder="+49 123 456789" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-navy-900 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all">
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-5">
+                        <div>
+                            <label for="kontaktDatum" class="block text-sm font-semibold text-navy-900 mb-1.5">Wunschdatum *</label>
+                            <input type="date" id="kontaktDatum" required class="w-full px-4 py-3 border border-slate-200 rounded-xl text-navy-900 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label for="kontaktUhrzeit" class="block text-sm font-semibold text-navy-900 mb-1.5">Uhrzeit *</label>
+                            <select id="kontaktUhrzeit" required class="w-full px-4 py-3 border border-slate-200 rounded-xl text-navy-900 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all bg-white">
+                                <option value="">Bitte wählen…</option>
+                                <option value="08:00">08:00 Uhr</option>
+                                <option value="08:15">08:15 Uhr</option>
+                                <option value="08:30">08:30 Uhr</option>
+                                <option value="08:45">08:45 Uhr</option>
+                                <option value="09:00">09:00 Uhr</option>
+                                <option value="09:15">09:15 Uhr</option>
+                                <option value="09:30">09:30 Uhr</option>
+                                <option value="09:45">09:45 Uhr</option>
+                                <option value="10:00">10:00 Uhr</option>
+                                <option value="10:15">10:15 Uhr</option>
+                                <option value="10:30">10:30 Uhr</option>
+                                <option value="10:45">10:45 Uhr</option>
+                                <option value="11:00">11:00 Uhr</option>
+                                <option value="11:15">11:15 Uhr</option>
+                                <option value="11:30">11:30 Uhr</option>
+                                <option value="11:45">11:45 Uhr</option>
+                                <option value="12:00">12:00 Uhr</option>
+                                <option value="12:15">12:15 Uhr</option>
+                                <option value="12:30">12:30 Uhr</option>
+                                <option value="12:45">12:45 Uhr</option>
+                                <option value="13:00">13:00 Uhr</option>
+                                <option value="13:15">13:15 Uhr</option>
+                                <option value="13:30">13:30 Uhr</option>
+                                <option value="13:45">13:45 Uhr</option>
+                                <option value="14:00">14:00 Uhr</option>
+                                <option value="14:15">14:15 Uhr</option>
+                                <option value="14:30">14:30 Uhr</option>
+                                <option value="14:45">14:45 Uhr</option>
+                                <option value="15:00">15:00 Uhr</option>
+                                <option value="15:15">15:15 Uhr</option>
+                                <option value="15:30">15:30 Uhr</option>
+                                <option value="15:45">15:45 Uhr</option>
+                                <option value="16:00">16:00 Uhr</option>
+                                <option value="16:15">16:15 Uhr</option>
+                                <option value="16:30">16:30 Uhr</option>
+                                <option value="16:45">16:45 Uhr</option>
+                                <option value="17:00">17:00 Uhr</option>
+                                <option value="17:15">17:15 Uhr</option>
+                                <option value="17:30">17:30 Uhr</option>
+                                <option value="17:45">17:45 Uhr</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="kontaktNachricht" class="block text-sm font-semibold text-navy-900 mb-1.5">Nachricht <span class="font-normal text-slate-400">(optional)</span></label>
+                        <textarea id="kontaktNachricht" rows="3" placeholder="Worum geht es? z. B. neue Website, Redesign, Online-Shop…" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-navy-900 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all resize-none"></textarea>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" id="kontaktDSGVO" required class="mt-1 w-4 h-4 rounded border-slate-300 text-brand-500 focus:ring-brand-500">
+                        <label for="kontaktDSGVO" class="text-sm text-slate-600">Ich stimme der <a href="#" onclick="openLegal('datenschutz'); return false;" class="text-brand-500 hover:underline font-medium">Datenschutzerklärung</a> zu und bin einverstanden, dass Forest Code mich zum vereinbarten Termin telefonisch kontaktiert.</label>
+                    </div>
+                    <button type="submit" id="kontaktSubmitBtn" class="w-full btn-primary text-base py-3.5 shadow-lg shadow-brand-500/25 justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Rückruf-Termin vereinbaren
+                    </button>
+                    <div id="kontaktSuccess" class="hidden bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                        <svg class="w-8 h-8 text-green-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <p class="font-semibold text-green-800">Termin erfolgreich angefragt!</p>
+                        <p class="text-sm text-green-700 mt-1">Wir rufen Sie zum gewünschten Zeitpunkt an.</p>
+                    </div>
+                    <div id="kontaktError" class="hidden bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                        <p class="font-semibold text-red-800">Fehler beim Senden</p>
+                        <p class="text-sm text-red-700 mt-1">Bitte versuchen Sie es erneut oder schreiben Sie uns direkt an info.forestcode@gmail.com</p>
+                    </div>
+                </form>
+            </div>
+            <!-- Info-Spalte -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-gradient-to-br from-navy-800 to-navy-900 rounded-2xl p-6 text-white">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-brand-500/20 rounded-xl flex items-center justify-center"><svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg></div>
+                        <h3 class="font-heading font-bold text-lg">15 Min. Rückruf</h3>
+                    </div>
+                    <p class="text-white/70 text-sm mb-4">Wählen Sie Ihren Wunschtermin und wir rufen Sie pünktlich an – kostenlos und unverbindlich.</p>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-center gap-2.5"><svg class="w-4 h-4 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="text-white/90">Montag – Freitag</span></li>
+                        <li class="flex items-center gap-2.5"><svg class="w-4 h-4 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="text-white/90">08:00 – 18:00 Uhr</span></li>
+                        <li class="flex items-center gap-2.5"><svg class="w-4 h-4 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="text-white/90">15-Minuten-Slots</span></li>
+                        <li class="flex items-center gap-2.5"><svg class="w-4 h-4 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="text-white/90">Kostenlos & unverbindlich</span></li>
+                    </ul>
+                </div>
+                <div class="bg-brand-50 border border-brand-100 rounded-2xl p-6">
+                    <h4 class="font-heading font-semibold text-navy-900 mb-3">Lieber direkt schreiben?</h4>
+                    <a href="mailto:info.forestcode@gmail.com" class="flex items-center gap-3 text-brand-600 hover:text-brand-700 font-medium transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        info.forestcode@gmail.com
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -1051,6 +1166,84 @@ function saveToCRM() {
 
 // Escape key closes all overlays
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeKonfigurator(); closeLegal('agb'); closeLegal('impressum'); closeLegal('datenschutz'); closeChatbot(); } });
+
+// === KONTAKTFORMULAR: Datum-Validierung & Absenden ===
+(function() {
+    var datumInput = document.getElementById('kontaktDatum');
+    if (!datumInput) return;
+
+    // Min-Datum: morgen, keine Wochenenden
+    function setMinDate() {
+        var d = new Date();
+        d.setDate(d.getDate() + 1);
+        // Falls morgen Sa/So, auf Montag springen
+        while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
+        datumInput.min = d.toISOString().split('T')[0];
+        // Max: 60 Tage in die Zukunft
+        var max = new Date();
+        max.setDate(max.getDate() + 60);
+        datumInput.max = max.toISOString().split('T')[0];
+    }
+    setMinDate();
+
+    // Wochenenden blockieren
+    datumInput.addEventListener('input', function() {
+        var val = this.value;
+        if (!val) return;
+        var d = new Date(val + 'T12:00:00');
+        if (d.getDay() === 0 || d.getDay() === 6) {
+            alert('Bitte wählen Sie einen Wochentag (Montag – Freitag).');
+            this.value = '';
+        }
+    });
+
+    // Formular absenden
+    document.getElementById('kontaktForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var btn = document.getElementById('kontaktSubmitBtn');
+        var successDiv = document.getElementById('kontaktSuccess');
+        var errorDiv = document.getElementById('kontaktError');
+        successDiv.classList.add('hidden');
+        errorDiv.classList.add('hidden');
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Wird gesendet…';
+
+        var name = document.getElementById('kontaktName').value.trim();
+        var email = document.getElementById('kontaktEmail').value.trim();
+        var tel = document.getElementById('kontaktTel').value.trim();
+        var datum = document.getElementById('kontaktDatum').value;
+        var uhrzeit = document.getElementById('kontaktUhrzeit').value;
+        var nachricht = document.getElementById('kontaktNachricht').value.trim();
+
+        var payload = {
+            name: name,
+            email: email,
+            phone: tel,
+            company: '',
+            message: 'RÜCKRUF-TERMIN\n\nDatum: ' + datum + '\nUhrzeit: ' + uhrzeit + ' Uhr\nTelefon: ' + tel + (nachricht ? '\n\nNachricht:\n' + nachricht : '')
+        };
+
+        fetch('/.netlify/functions/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(function(r) {
+            if (r.ok) {
+                document.getElementById('kontaktForm').reset();
+                setMinDate();
+                successDiv.classList.remove('hidden');
+                btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Rückruf-Termin vereinbaren';
+                btn.disabled = false;
+            } else { throw new Error('send failed'); }
+        })
+        .catch(function() {
+            errorDiv.classList.remove('hidden');
+            btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Rückruf-Termin vereinbaren';
+            btn.disabled = false;
+        });
+    });
+})();
 </script>
 
 <!-- ===== CHATBOT STYLES ===== -->
