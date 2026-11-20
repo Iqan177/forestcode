@@ -948,20 +948,36 @@ async function handleLogin() {
         return;
     }
 
+    // Debug: show that function is called
+    errorEl.textContent = 'Verbindung wird hergestellt...';
+    errorEl.classList.remove('hidden');
+    errorEl.style.color = '#3b82f6';
+
     try {
         var res = await sb.auth.signInWithPassword({ email: email, password: pass });
+        console.log('Login response:', JSON.stringify(res));
+
         if (res.error) {
+            errorEl.style.color = '#ef4444';
             errorEl.textContent = res.error.message || 'Ungültige Anmeldedaten';
-            errorEl.classList.remove('hidden');
             return;
         }
+        // Check if session actually exists (email confirmation required?)
+        if (!res.data || !res.data.session) {
+            errorEl.style.color = '#ef4444';
+            errorEl.textContent = 'E-Mail nicht bestätigt. Bitte in Supabase unter Authentication > Providers > Email "Confirm email" deaktivieren, dann Nutzer löschen und neu erstellen.';
+            return;
+        }
+        errorEl.classList.add('hidden');
+        errorEl.style.color = '#ef4444';
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('dashboardApp').classList.remove('hidden');
         document.getElementById('legalFooter').classList.remove('hidden');
         refreshAll();
     } catch (err) {
-        errorEl.textContent = 'Verbindungsfehler: ' + (err.message || 'Unbekannter Fehler');
-        errorEl.classList.remove('hidden');
+        console.error('Login error:', err);
+        errorEl.style.color = '#ef4444';
+        errorEl.textContent = 'Fehler: ' + (err.message || 'Unbekannter Fehler');
     }
 }
 
