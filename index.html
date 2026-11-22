@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forest Code – Individuelle Websites & Digitale Lösungen</title>
     <meta name="description" content="Forest Code entwickelt moderne, individuelle Websites und digitale Lösungen für Ihr Unternehmen. Branchenorientiert, professionell und persönlich.">
-    <link rel="canonical" href="https://www.mominsys.de">
+    <link rel="canonical" href="https://www.forestcode.de">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -583,9 +583,12 @@
             <p>(3) Der Auftragnehmer behält sich das Recht vor, die erstellten Arbeiten als Referenz zu verwenden, sofern der Auftraggeber nicht ausdrücklich widerspricht.</p>
 
             <h3 class="font-bold text-navy-900 text-base mt-6">§ 8 Vertragslaufzeit und Kündigung</h3>
-            <p>(1) Die Vertragslaufzeit ergibt sich aus dem jeweiligen Angebot. Wartungs- und Pflegeverträge verlängern sich automatisch um jeweils einen Monat, wenn sie nicht mit einer Frist von 4 Wochen zum Laufzeitende gekündigt werden.</p>
-            <p>(2) Das Recht zur außerordentlichen Kündigung aus wichtigem Grund bleibt unberührt.</p>
-            <p>(3) Im Falle einer Kündigung durch den Auftraggeber vor Fertigstellung sind die bis dahin erbrachten Leistungen zu vergüten.</p>
+            <p>(1) Service-Modelle (Pro, Max) haben eine Mindestvertragslaufzeit von 12 Monaten ab Vertragsschluss.</p>
+            <p>(2) Die Kündigung eines Service-Modells muss schriftlich (per E-Mail an info.forestcode@gmail.com) spätestens 3 Monate vor Ablauf der jeweiligen Vertragslaufzeit erfolgen.</p>
+            <p>(3) Liegt 3 Monate vor Ablauf der Vertragslaufzeit keine schriftliche Kündigung vor, verlängert sich der Vertrag automatisch um weitere 12 Monate zu den gleichen Konditionen.</p>
+            <p>(4) Bei Einmalzahlung (Basis-Modell) entfällt eine laufende Vertragsbindung.</p>
+            <p>(5) Das Recht zur außerordentlichen Kündigung aus wichtigem Grund bleibt unberührt.</p>
+            <p>(6) Im Falle einer Kündigung durch den Auftraggeber vor Fertigstellung sind die bis dahin erbrachten Leistungen zu vergüten.</p>
 
             <h3 class="font-bold text-navy-900 text-base mt-6">§ 9 Datenschutz und Vertraulichkeit</h3>
             <p>(1) Der Auftragnehmer verarbeitet personenbezogene Daten des Auftraggebers ausschließlich zur Vertragserfüllung und im Einklang mit den geltenden Datenschutzgesetzen (DSGVO, BDSG).</p>
@@ -767,6 +770,7 @@
                             <div class="flex justify-between"><span class="text-slate-600">Performance-Optimierung</span><span class="text-green-500">✓</span></div>
                             <div class="flex justify-between"><span class="text-slate-600">Reaktionszeit</span><span class="text-navy-900">72 Stunden</span></div>
                             <div class="flex justify-between"><span class="text-slate-600">Mindestlaufzeit</span><span class="text-navy-900">12 Monate</span></div>
+                            <div class="flex justify-between"><span class="text-slate-600">Kündigungsfrist</span><span class="text-navy-900">3 Monate</span></div>
                         </div>
                     </div>
                     <!-- Max -->
@@ -788,6 +792,7 @@
                             <div class="flex justify-between"><span class="text-slate-600">Performance-Optimierung</span><span class="text-green-500">✓</span></div>
                             <div class="flex justify-between"><span class="text-slate-600">Reaktionszeit</span><span class="text-navy-900">48 Stunden</span></div>
                             <div class="flex justify-between"><span class="text-slate-600">Mindestlaufzeit</span><span class="text-navy-900">12 Monate</span></div>
+                            <div class="flex justify-between"><span class="text-slate-600">Kündigungsfrist</span><span class="text-navy-900">3 Monate</span></div>
                         </div>
                     </div>
                 </div>
@@ -1014,8 +1019,8 @@ function buildSummary() {
         var modelPrice = total;
         var modelDetails = '';
         if (konfigState.serviceModel === 'einmalig') { modelDetails = 'Einmalzahlung, kein monatlicher Service · SSL ✓ · DSGVO-konform ✓ · Browser-Kompatibilität ✓ · 30 Tage Support'; }
-        else if (konfigState.serviceModel === 'pro') { modelPrice = Math.round(total * 0.85); modelDetails = 'Einmalzahlung (15 % Nachlass) + 45 €/Monat · SSL ✓ · DSGVO-konform ✓ · Browser-Kompatibilität ✓ · 30 Tage Support · Techn. Wartung ✓ · 1× Update/Jahr · 1× inhaltl. Änderung/Jahr · Performance-Optimierung ✓ · Reaktionszeit 72h · Mindestlaufzeit 12 Monate'; }
-        else if (konfigState.serviceModel === 'max') { modelPrice = Math.round(total * 0.80); modelDetails = 'Einmalzahlung (20 % Nachlass) + 70 €/Monat · SSL ✓ · DSGVO-konform ✓ · Browser-Kompatibilität ✓ · 30 Tage Support · Techn. Wartung ✓ · 2× Updates/Jahr · 3× inhaltl. Änderungen/Jahr · Performance-Optimierung ✓ · Reaktionszeit 48h · Mindestlaufzeit 12 Monate'; }
+        else if (konfigState.serviceModel === 'pro') { modelPrice = Math.round(total * 0.85); modelDetails = 'Einmalzahlung (15 % Nachlass) + 45 €/Monat · SSL ✓ · DSGVO-konform ✓ · Browser-Kompatibilität ✓ · 30 Tage Support · Techn. Wartung ✓ · 1× Update/Jahr · 1× inhaltl. Änderung/Jahr · Performance-Optimierung ✓ · Reaktionszeit 72h · Mindestlaufzeit 12 Monate · Kündigungsfrist 3 Monate · Automatische Verlängerung um 12 Monate'; }
+        else if (konfigState.serviceModel === 'max') { modelPrice = Math.round(total * 0.80); modelDetails = 'Einmalzahlung (20 % Nachlass) + 70 €/Monat · SSL ✓ · DSGVO-konform ✓ · Browser-Kompatibilität ✓ · 30 Tage Support · Techn. Wartung ✓ · 2× Updates/Jahr · 3× inhaltl. Änderungen/Jahr · Performance-Optimierung ✓ · Reaktionszeit 48h · Mindestlaufzeit 12 Monate · Kündigungsfrist 3 Monate · Automatische Verlängerung um 12 Monate'; }
         html += '<div class="border-t border-slate-200 pt-3 mt-3"><strong class="text-navy-900">Service-Modell:</strong> ' + modelName + '</div>';
         html += '<div class="text-xs text-slate-500">' + modelDetails + '</div>';
         html += '<div class="border-t border-slate-200 pt-3 mt-3 flex justify-between items-center"><strong class="text-navy-900 text-lg">Projektpreis</strong><span class="text-2xl font-heading font-bold text-brand-500">' + formatPrice(modelPrice) + '</span></div>';
