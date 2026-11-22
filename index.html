@@ -855,19 +855,6 @@
                     </div>
                 </div>
 
-                <!-- Zusatzleistungen -->
-                <div class="mt-6 bg-slate-50 rounded-xl p-5">
-                    <h4 class="font-heading font-bold text-navy-900 text-sm mb-3">Zusatzleistungen (optional)</h4>
-                    <div class="space-y-2 text-sm" id="zusatzleistungenList">
-                        <div class="feature-checkbox" onclick="toggleZusatz(this, 'unterseite')"><div class="feature-check-icon"><svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div class="flex-1"><span class="text-sm text-slate-700 font-medium">Neue Unterseite</span></div><span class="text-brand-500 font-semibold text-sm">149 €</span></div>
-                        <div class="feature-checkbox" onclick="toggleZusatz(this, 'druckvorlage')"><div class="feature-check-icon"><svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div class="flex-1"><span class="text-sm text-slate-700 font-medium">Druckfertige Designvorlage (PDF)</span></div><span class="text-brand-500 font-semibold text-sm">199 €</span></div>
-                        <div class="feature-checkbox" onclick="toggleZusatz(this, 'video')"><div class="feature-check-icon"><svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div class="flex-1"><span class="text-sm text-slate-700 font-medium">Video-Nachdreh (bis 2 Std.)</span></div><span class="text-brand-500 font-semibold text-sm">299 €</span></div>
-                        <div class="feature-checkbox" onclick="toggleZusatz(this, 'social')"><div class="feature-check-icon"><svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div class="flex-1"><span class="text-sm text-slate-700 font-medium">5 Social-Media Vorlagen (Canva)</span></div><span class="text-brand-500 font-semibold text-sm">149 €</span></div>
-                        <div class="feature-checkbox" onclick="toggleZusatz(this, 'google')"><div class="feature-check-icon"><svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div class="flex-1"><span class="text-sm text-slate-700 font-medium">Google Business Profil Einrichtung</span></div><span class="text-brand-500 font-semibold text-sm">99 €</span></div>
-                        <div class="feature-checkbox" onclick="toggleZusatz(this, 'qr')"><div class="feature-check-icon"><svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div class="flex-1"><span class="text-sm text-slate-700 font-medium">Bewertungs-QR-Karten (10 Stk.)</span></div><span class="text-brand-500 font-semibold text-sm">49 €</span></div>
-                        <div class="feature-checkbox" onclick="toggleZusatz(this, 'chatbot')"><div class="feature-check-icon"><svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div class="flex-1"><span class="text-sm text-slate-700 font-medium">KI-Chatbot Integration</span><p class="text-xs text-slate-400 mt-0.5">149 € einmalig + 39 €/Mo</p></div><span class="text-brand-500 font-semibold text-sm">149 €</span></div>
-                    </div>
-                </div>
             </div>
             <!-- STEP 6: Zusammenfassung & Kontaktdaten -->
             <div class="konfig-step" id="kStep6">
@@ -978,22 +965,12 @@ function closeLegal(t) { document.getElementById(t + 'Overlay').classList.remove
 
 // ===== KONFIGURATOR =====
 const TOTAL_STEPS = 6;
-let konfigState = { step:1, branch:null, customBranch:'', pages:0, features:[], customFeatures:'', design:null, colors:'', hasLogo:'nein', hasWebsite:'nein', existingUrl:'', wantsRedesign:false, referenceWebsites:'', serviceModel:null, zusatzleistungen:[] };
+let konfigState = { step:1, branch:null, customBranch:'', pages:0, features:[], customFeatures:'', design:null, colors:'', hasLogo:'nein', hasWebsite:'nein', existingUrl:'', wantsRedesign:false, referenceWebsites:'', serviceModel:null };
 
 const branchNames = { gastro:'Gastronomie', unternehmen:'Unternehmen & Dienstleister', werkstatt:'Werkstätten', arzt:'Arztpraxen', handwerker:'Handwerker', andere:'Andere Geschäftsbereiche' };
 const designNames = { modern:'Modern & minimalistisch', elegant:'Elegant & hochwertig', klassisch:'Klassisch & seriös', kreativ:'Kreativ & außergewöhnlich' };
 const serviceModelNames = { 'starter-abo':'Starter (Abo)', 'business-abo':'Business (Abo)', 'premium-abo':'Premium (Abo)', 'starter-einmal':'Starter (Einmalpreis)', 'business-einmal':'Business (Einmalpreis)', 'premium-einmal':'Premium (Einmalpreis)' };
 
-// Zusatzleistungen
-const zusatzleistungen = {
-    unterseite: { name:'Neue Unterseite', price:149, monthly:0 },
-    druckvorlage: { name:'Druckfertige Designvorlage (PDF)', price:199, monthly:0 },
-    video: { name:'Video-Nachdreh (bis 2 Std.)', price:299, monthly:0 },
-    social: { name:'5 Social-Media Vorlagen (Canva)', price:149, monthly:0 },
-    google: { name:'Google Business Profil Einrichtung', price:99, monthly:0 },
-    qr: { name:'Bewertungs-QR-Karten (10 Stk.)', price:49, monthly:0 },
-    chatbot: { name:'KI-Chatbot Integration', price:149, monthly:39 }
-};
 // Service-Modell Preise
 const modelPrices = {
     'starter-abo': { einmalig:599, monthly:39, aenderungen:'30 Min./Monat', support:'E-Mail 48h', label:'Starter (Abo)' },
@@ -1019,23 +996,25 @@ function getBasePrice() {
     var mp = modelPrices[konfigState.serviceModel];
     return mp ? mp.einmalig : 0;
 }
-function getZusatzPrice() {
-    return (konfigState.zusatzleistungen || []).reduce(function(sum, key) {
-        var z = zusatzleistungen[key];
-        return sum + (z ? z.price : 0);
+function getFeaturesPrice() {
+    return (konfigState.features || []).reduce(function(sum, fname) {
+        var pf = pricedFeatures.find(function(f) { return f.name === fname; });
+        return sum + (pf ? pf.price : 0);
     }, 0);
 }
-function getZusatzMonthly() {
-    return (konfigState.zusatzleistungen || []).reduce(function(sum, key) {
-        var z = zusatzleistungen[key];
-        return sum + (z ? z.monthly : 0);
-    }, 0);
+function getFeaturesMonthly() {
+    // KI-Chatbot hat 39 €/Mo laufende Kosten
+    var monthly = 0;
+    (konfigState.features || []).forEach(function(fname) {
+        if (fname === 'KI-Chatbot Integration') monthly += 39;
+    });
+    return monthly;
 }
-function getTotalPrice() { return getBasePrice() + getZusatzPrice(); }
+function getTotalPrice() { return getBasePrice() + getFeaturesPrice(); }
 function getMonthlyPrice() {
     if (!konfigState.serviceModel) return 0;
     var mp = modelPrices[konfigState.serviceModel];
-    return (mp ? mp.monthly : 0) + getZusatzMonthly();
+    return (mp ? mp.monthly : 0) + getFeaturesMonthly();
 }
 function formatPrice(p) { return p.toLocaleString('de-DE') + ' €'; }
 
@@ -1048,12 +1027,6 @@ function switchPricingTab(tab) {
     konfigState.serviceModel = null;
 }
 
-function toggleZusatz(el, key) {
-    el.classList.toggle('checked');
-    if (!konfigState.zusatzleistungen) konfigState.zusatzleistungen = [];
-    if (el.classList.contains('checked')) { if (konfigState.zusatzleistungen.indexOf(key) === -1) konfigState.zusatzleistungen.push(key); }
-    else { konfigState.zusatzleistungen = konfigState.zusatzleistungen.filter(function(z) { return z !== key; }); }
-}
 
 function openKonfigurator() { var o = document.getElementById('konfiguratorOverlay'); o.classList.add('active'); document.body.style.overflow = 'hidden'; requestAnimationFrame(function() { o.classList.add('show'); }); }
 function openKonfiguratorWithBranch(b) { openKonfigurator(); var c = document.querySelector('.branch-select-card[data-branch="' + b + '"]'); if (c) selectBranch(c); }
@@ -1102,14 +1075,6 @@ function renderServiceModel() {
         // Show correct tab
         if (konfigState.serviceModel.indexOf('-einmal') !== -1) switchPricingTab('einmal');
     }
-    // Restore zusatzleistungen
-    if (konfigState.zusatzleistungen && konfigState.zusatzleistungen.length) {
-        konfigState.zusatzleistungen.forEach(function(key) {
-            document.querySelectorAll('#zusatzleistungenList .feature-checkbox').forEach(function(cb) {
-                if (cb.getAttribute('onclick') && cb.getAttribute('onclick').indexOf("'" + key + "'") !== -1) cb.classList.add('checked');
-            });
-        });
-    }
 }
 
 function buildSummary() {
@@ -1142,12 +1107,6 @@ function buildSummary() {
         } else {
             html += '<div class="text-xs text-slate-500">Änderungen: ' + mp.aenderungen + ' · Hosting: 9 €/Mo</div>';
         }
-    }
-    // Zusatzleistungen
-    if (konfigState.zusatzleistungen && konfigState.zusatzleistungen.length > 0) {
-        html += '<div class="border-t border-slate-200 pt-3 mt-3"><strong class="text-navy-900">Zusatzleistungen:</strong><ul class="list-none mt-1 text-slate-600 space-y-0.5">';
-        konfigState.zusatzleistungen.forEach(function(key) { var z = zusatzleistungen[key]; if (z) { html += '<li class="flex justify-between"><span>' + z.name + (z.monthly > 0 ? ' (+' + z.monthly + ' €/Mo)' : '') + '</span><span class="text-brand-500 font-medium">+' + z.price + ' €</span></li>'; } });
-        html += '</ul></div>';
     }
     // Gesamtpreis
     if (konfigState.serviceModel) {
