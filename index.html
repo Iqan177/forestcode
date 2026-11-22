@@ -1003,8 +1003,16 @@ const modelPrices = {
     'business-einmal': { einmalig:2199, monthly:9, aenderungen:'69 €/Std', support:'E-Mail', label:'Business (Einmalpreis)' },
     'premium-einmal': { einmalig:3499, monthly:9, aenderungen:'65 €/Std', support:'E-Mail', label:'Premium (Einmalpreis)' }
 };
-// Keep pricedFeatures empty for backward compat
-const pricedFeatures = [];
+const pricedFeatures = [
+    { name:'Neue Unterseite', price:149, desc:'Zusätzliche Unterseite für Ihre Website' },
+    { name:'Druckfertige Designvorlage (PDF)', price:199, desc:'Professionelle Druckvorlage passend zu Ihrem Webdesign' },
+    { name:'Video-Nachdreh (bis 2 Std.)', price:299, desc:'Professioneller Videodreh für Ihre Website' },
+    { name:'Extra Dreh-Zeit (pro Stunde)', price:75, desc:'Zusätzliche Dreh-Zeit über die 2 Stunden hinaus' },
+    { name:'5 Social-Media Vorlagen (Canva)', price:149, desc:'Fertige Vorlagen für Instagram, Facebook & Co.' },
+    { name:'Google Business Profil Einrichtung', price:99, desc:'Optimale Sichtbarkeit in der Google-Suche und Maps' },
+    { name:'Bewertungs-QR-Karten (10 Stk.)', price:49, desc:'Druckfertige QR-Karten für Google-Bewertungen' },
+    { name:'KI-Chatbot Integration', price:149, desc:'Automatisierter Assistent für Kundenfragen (+ 39 €/Mo)' }
+];
 
 function getBasePrice() {
     if (!konfigState.serviceModel) return 0;
@@ -1117,6 +1125,12 @@ function buildSummary() {
     if (konfigState.hasWebsite === 'ja') { html += '<div><strong class="text-navy-900">Bestehende Website:</strong> ' + (konfigState.existingUrl || 'Ja'); if (konfigState.wantsRedesign) html += ' (Redesign gewünscht)'; html += '</div>'; }
     if (konfigState.referenceWebsites) html += '<div><strong class="text-navy-900">Referenzwebsites:</strong> ' + konfigState.referenceWebsites + '</div>';
     if (konfigState.customFeatures) html += '<div><strong class="text-navy-900">Sonstige Wünsche:</strong> ' + konfigState.customFeatures + '</div>';
+    // Gewählte Zusatzfunktionen (Step 4)
+    if (konfigState.features && konfigState.features.length > 0) {
+        html += '<div class="border-t border-slate-200 pt-3 mt-3"><strong class="text-navy-900">Zusatzfunktionen:</strong><ul class="list-none mt-1 text-slate-600 space-y-0.5">';
+        konfigState.features.forEach(function(fname) { var pf = pricedFeatures.find(function(f) { return f.name === fname; }); if (pf) { html += '<li class="flex justify-between"><span>' + pf.name + '</span><span class="text-brand-500 font-medium">+' + pf.price + ' €</span></li>'; } else { html += '<li>' + fname + '</li>'; } });
+        html += '</ul></div>';
+    }
     // Service-Modell & Preis
     if (konfigState.serviceModel) {
         var mp = modelPrices[konfigState.serviceModel];
