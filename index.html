@@ -672,9 +672,7 @@
                 <div class="progress-dot active" data-step="1">1</div><div class="progress-connector"></div>
                 <div class="progress-dot" data-step="2">2</div><div class="progress-connector"></div>
                 <div class="progress-dot" data-step="3">3</div><div class="progress-connector"></div>
-                <div class="progress-dot" data-step="4">4</div><div class="progress-connector"></div>
-                <div class="progress-dot" data-step="5">5</div><div class="progress-connector"></div>
-                <div class="progress-dot" data-step="6">6</div>
+                <div class="progress-dot" data-step="4">4</div>
             </div>
         </div>
         <div class="p-6 pt-8">
@@ -692,22 +690,9 @@
                 </div>
                 <div id="customBranchInput" class="hidden mt-4"><label class="block text-sm font-medium text-navy-900 mb-1.5">Bitte beschreiben Sie Ihre Branche:</label><input type="text" id="customBranchText" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition text-sm" placeholder="z.B. Einzelhandel, Kosmetik, Verein..."></div>
             </div>
-            <!-- STEP 2: Umfang -->
+
+            <!-- STEP 2: Design -->
             <div class="konfig-step" id="kStep2">
-                <h3 class="text-lg font-heading font-bold text-navy-900 mb-2">Umfang der Website</h3>
-                <p class="text-slate-500 text-sm mb-8">Wie umfangreich soll Ihre Website werden?</p>
-                <div class="bg-brand-50 rounded-xl p-6 mb-6 text-center">
-                    <div class="text-4xl font-heading font-bold text-brand-500" id="pageDisplay">Onepager</div>
-                    <div class="text-slate-500 text-sm mt-2" id="pageSubtitle">1 Seite</div>
-                </div>
-                <div class="px-2">
-                    <input type="range" id="pageSlider" min="0" max="9" value="0" oninput="updatePageSlider(this.value)">
-                    <div class="flex justify-between text-xs text-slate-400 mt-2"><span>Onepager</span><span>+ 9 Unterseiten</span></div>
-                </div>
-                <p class="text-slate-400 text-xs mt-4">Die Startseite zählt als Hauptseite. Der Slider legt die Anzahl zusätzlicher Unterseiten fest.</p>
-            </div>
-            <!-- STEP 3: Design (vorher Step 4) -->
-            <div class="konfig-step" id="kStep3">
                 <h3 class="text-lg font-heading font-bold text-navy-900 mb-2">Design und Gestaltung</h3>
                 <p class="text-slate-500 text-sm mb-6">Welche Designrichtung passt zu Ihrem Unternehmen?</p>
                 <div class="grid grid-cols-2 gap-3 mb-6" id="designGrid">
@@ -723,17 +708,10 @@
                     <div><label class="block text-sm font-medium text-navy-900 mb-1.5">Referenzwebsites (die Ihnen gefallen)</label><input type="text" id="referenceWebsites" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition text-sm" placeholder="z.B. www.beispiel.de, www.vorbild.com"></div>
                 </div>
             </div>
-            <!-- STEP 4: Funktionen (vorher Step 3) -->
-            <div class="konfig-step" id="kStep4">
-                <h3 class="text-lg font-heading font-bold text-navy-900 mb-2">Zusatzfunktionen auswählen</h3>
-                <p class="text-slate-500 text-sm mb-6">Wählen Sie die gewünschten Funktionen für Ihre Website.</p>
-                <div class="space-y-2.5" id="featureList"></div>
-                <div class="mt-5"><label class="block text-sm font-medium text-navy-900 mb-1.5">Sonstige Wünsche (optional) <span class="text-xs font-normal text-slate-400">– Gegen Aufpreis möglich</span></label><textarea id="customFeatureText" rows="2" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition text-sm resize-none" placeholder="Beschreiben Sie hier weitere gewünschte Funktionen..."></textarea></div>
-            </div>
-            <!-- STEP 5: Service-Modell -->
-            <div class="konfig-step" id="kStep5">
-                <h3 class="text-lg font-heading font-bold text-navy-900 mb-2">Service-Modell wählen</h3>
-                <p class="text-slate-500 text-sm mb-6">Wählen Sie zwischen Abo-Modell (inkl. Stundenkontingent) oder Einmalpreis.</p>
+            <!-- STEP 3: Service-Modell & Zusatzfunktionen -->
+            <div class="konfig-step" id="kStep3">
+                <h3 class="text-lg font-heading font-bold text-navy-900 mb-2">Service-Modell & Zusatzfunktionen</h3>
+                <p class="text-slate-500 text-sm mb-6">Wählen Sie Ihr Paket und optionale Zusatzfunktionen.</p>
                 <!-- Preismodell-Tabs -->
                 <div class="flex bg-slate-100 rounded-lg p-1 mb-6">
                     <button type="button" class="flex-1 py-2 px-4 rounded-md text-sm font-semibold transition pricing-tab active" data-tab="abo" onclick="switchPricingTab('abo')">Abo-Modell <span class="text-xs font-normal text-slate-400">(empfohlen)</span></button>
@@ -855,9 +833,17 @@
                     </div>
                 </div>
 
+                <!-- Zusatzfunktionen -->
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h4 class="text-md font-heading font-bold text-navy-900 mb-1">Zusatzfunktionen</h4>
+                    <p class="text-slate-500 text-xs mb-4">Erweitern Sie Ihre Website mit zusätzlichen Modulen.</p>
+                    <div class="space-y-2.5" id="featureList"></div>
+                    <div class="mt-5"><label class="block text-sm font-medium text-navy-900 mb-1.5">Sonstige Wünsche (optional) <span class="text-xs font-normal text-slate-400">– Gegen Aufpreis möglich</span></label><textarea id="customFeatureText" rows="2" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition text-sm resize-none" placeholder="Beschreiben Sie hier weitere gewünschte Funktionen..."></textarea></div>
+                </div>
+
             </div>
-            <!-- STEP 6: Zusammenfassung & Kontaktdaten -->
-            <div class="konfig-step" id="kStep6">
+            <!-- STEP 4: Zusammenfassung & Kontaktdaten -->
+            <div class="konfig-step" id="kStep4">
                 <h3 class="text-lg font-heading font-bold text-navy-900 mb-2">Zusammenfassung</h3>
                 <p class="text-slate-500 text-sm mb-6">Überprüfen Sie Ihre Konfiguration und senden Sie Ihre Projektanfrage.</p>
                 <div class="bg-slate-50 rounded-xl p-5 mb-6 space-y-4 text-sm" id="summaryContent"></div>
@@ -964,8 +950,8 @@ function openLegal(t) { document.getElementById(t + 'Overlay').classList.add('ac
 function closeLegal(t) { document.getElementById(t + 'Overlay').classList.remove('active'); if (!document.getElementById('konfiguratorOverlay').classList.contains('active')) document.body.style.overflow = ''; }
 
 // ===== KONFIGURATOR =====
-const TOTAL_STEPS = 6;
-let konfigState = { step:1, branch:null, customBranch:'', pages:0, features:[], customFeatures:'', design:null, colors:'', hasLogo:'nein', hasWebsite:'nein', existingUrl:'', wantsRedesign:false, referenceWebsites:'', serviceModel:null };
+const TOTAL_STEPS = 4;
+let konfigState = { step:1, branch:null, customBranch:'', features:[], customFeatures:'', design:null, colors:'', hasLogo:'nein', hasWebsite:'nein', existingUrl:'', wantsRedesign:false, referenceWebsites:'', serviceModel:null };
 
 const branchNames = { gastro:'Gastronomie', unternehmen:'Unternehmen & Dienstleister', werkstatt:'Werkstätten', arzt:'Arztpraxen', handwerker:'Handwerker', andere:'Andere Geschäftsbereiche' };
 const designNames = { modern:'Modern & minimalistisch', elegant:'Elegant & hochwertig', klassisch:'Klassisch & seriös', kreativ:'Kreativ & außergewöhnlich' };
@@ -981,14 +967,16 @@ const modelPrices = {
     'premium-einmal': { einmalig:3499, monthly:9, aenderungen:'65 €/Std', support:'E-Mail', label:'Premium (Einmalpreis)' }
 };
 const pricedFeatures = [
-    { name:'Neue Unterseite', price:149, desc:'Zusätzliche Unterseite für Ihre Website' },
-    { name:'Druckfertige Designvorlage (PDF)', price:199, desc:'Professionelle Druckvorlage passend zu Ihrem Webdesign' },
-    { name:'Video-Nachdreh (bis 2 Std.)', price:299, desc:'Professioneller Videodreh für Ihre Website' },
-    { name:'Extra Dreh-Zeit (pro Stunde)', price:75, desc:'Zusätzliche Dreh-Zeit über die 2 Stunden hinaus' },
-    { name:'5 Social-Media Vorlagen (Canva)', price:149, desc:'Fertige Vorlagen für Instagram, Facebook & Co.' },
+    { name:'KI-Chatbot Integration', price:149, desc:'Automatisierter Assistent für Kundenfragen (+ 39 €/Mo)' },
+    { name:'Termin-Anfrage Modul', price:149, desc:'Kontaktformular mit Terminwunsch für Ihre Kunden' },
+    { name:'Online-Terminbuchungstool', price:249, desc:'Kunden buchen Termine direkt über Ihre Website' },
     { name:'Google Business Profil Einrichtung', price:99, desc:'Optimale Sichtbarkeit in der Google-Suche und Maps' },
     { name:'Bewertungs-QR-Karten (10 Stk.)', price:49, desc:'Druckfertige QR-Karten für Google-Bewertungen' },
-    { name:'KI-Chatbot Integration', price:149, desc:'Automatisierter Assistent für Kundenfragen (+ 39 €/Mo)' }
+    { name:'5 Social-Media Vorlagen (Canva)', price:149, desc:'Fertige Vorlagen für Instagram, Facebook & Co.' },
+    { name:'Druckfertige Designvorlage (PDF)', price:199, desc:'Professionelle Druckvorlage passend zu Ihrem Webdesign' },
+    { name:'Neue Unterseite', price:149, desc:'Zusätzliche Unterseite für Ihre Website' },
+    { name:'Video-Nachdreh (bis 2 Std.)', price:299, desc:'Professioneller Videodreh für Ihre Website' },
+    { name:'Extra Dreh-Zeit (pro Stunde)', price:75, desc:'Zusätzliche Dreh-Zeit über die 2 Stunden hinaus' }
 ];
 
 function getBasePrice() {
@@ -1036,13 +1024,7 @@ function selectBranch(el) { document.querySelectorAll('.branch-select-card').for
 function selectDesign(el) { document.querySelectorAll('.design-card').forEach(function(c) { c.classList.remove('selected'); }); el.classList.add('selected'); konfigState.design = el.dataset.design; }
 function selectServiceModel(el) { document.querySelectorAll('.model-card').forEach(function(c) { c.classList.remove('selected'); }); el.classList.add('selected'); konfigState.serviceModel = el.dataset.model; }
 
-function updatePageSlider(val) {
-    val = parseInt(val); konfigState.pages = val;
-    var d = document.getElementById('pageDisplay'), s = document.getElementById('pageSubtitle');
-    var total = val + 1;
-    if (val === 0) { d.textContent = 'Onepager'; s.textContent = '1 Seite'; }
-    else { d.textContent = 'Onepager + ' + val + ' Unterseite' + (val > 1 ? 'n' : ''); s.textContent = total + ' Seiten'; }
-}
+
 
 function renderFeatures() {
     var list = document.getElementById('featureList');
@@ -1082,15 +1064,14 @@ function buildSummary() {
     var bd = branchNames[konfigState.branch] || 'Nicht gewählt';
     if (konfigState.branch === 'andere' && konfigState.customBranch) bd += ': ' + konfigState.customBranch;
     html += '<div><strong class="text-navy-900">Geschäftsbereich:</strong> ' + bd + '</div>';
-    var totalPages = konfigState.pages + 1;
-    html += '<div><strong class="text-navy-900">Umfang:</strong> ' + (konfigState.pages === 0 ? 'Onepager (1 Seite)' : 'Onepager + ' + konfigState.pages + ' Unterseite' + (konfigState.pages > 1 ? 'n' : '') + ' (' + totalPages + ' Seiten)') + '</div>';
+
     if (konfigState.design) html += '<div><strong class="text-navy-900">Designrichtung:</strong> ' + designNames[konfigState.design] + '</div>';
     if (konfigState.colors) html += '<div><strong class="text-navy-900">Farbwünsche:</strong> ' + konfigState.colors + '</div>';
     if (konfigState.hasLogo === 'ja') html += '<div><strong class="text-navy-900">Logo:</strong> Vorhanden</div>';
     if (konfigState.hasWebsite === 'ja') { html += '<div><strong class="text-navy-900">Bestehende Website:</strong> ' + (konfigState.existingUrl || 'Ja'); if (konfigState.wantsRedesign) html += ' (Redesign gewünscht)'; html += '</div>'; }
     if (konfigState.referenceWebsites) html += '<div><strong class="text-navy-900">Referenzwebsites:</strong> ' + konfigState.referenceWebsites + '</div>';
     if (konfigState.customFeatures) html += '<div><strong class="text-navy-900">Sonstige Wünsche:</strong> ' + konfigState.customFeatures + '</div>';
-    // Gewählte Zusatzfunktionen (Step 4)
+    // Gewählte Zusatzfunktionen (Step 3)
     if (konfigState.features && konfigState.features.length > 0) {
         html += '<div class="border-t border-slate-200 pt-3 mt-3"><strong class="text-navy-900">Zusatzfunktionen:</strong><ul class="list-none mt-1 text-slate-600 space-y-0.5">';
         konfigState.features.forEach(function(fname) { var pf = pricedFeatures.find(function(f) { return f.name === fname; }); if (pf) { html += '<li class="flex justify-between"><span>' + pf.name + '</span><span class="text-brand-500 font-medium">+' + pf.price + ' €</span></li>'; } else { html += '<li>' + fname + '</li>'; } });
@@ -1123,14 +1104,14 @@ function buildSummary() {
 
 function saveCurrentStepData() {
     if (konfigState.step === 1) konfigState.customBranch = (document.getElementById('customBranchText') || {}).value || '';
-    else if (konfigState.step === 3) {
+    else if (konfigState.step === 2) {
         konfigState.colors = (document.getElementById('designColors') || {}).value || '';
         var logoEl = document.querySelector('input[name="hasLogo"]:checked'); konfigState.hasLogo = logoEl ? logoEl.value : 'nein';
         var webEl = document.querySelector('input[name="hasWebsite"]:checked'); konfigState.hasWebsite = webEl ? webEl.value : 'nein';
         konfigState.existingUrl = (document.getElementById('existingWebsiteUrl') || {}).value || '';
         konfigState.wantsRedesign = (document.getElementById('wantsRedesign') || {}).checked || false;
         konfigState.referenceWebsites = (document.getElementById('referenceWebsites') || {}).value || '';
-    } else if (konfigState.step === 4) {
+    } else if (konfigState.step === 3) {
         konfigState.customFeatures = (document.getElementById('customFeatureText') || {}).value || '';
     }
 }
@@ -1138,7 +1119,7 @@ function saveCurrentStepData() {
 function validateStep() {
     if (konfigState.step === 1 && !konfigState.branch) { alert('Bitte wählen Sie einen Geschäftsbereich aus.'); return false; }
     if (konfigState.step === 1 && konfigState.branch === 'andere' && !document.getElementById('customBranchText').value.trim()) { alert('Bitte beschreiben Sie Ihre Branche.'); return false; }
-    if (konfigState.step === 5 && !konfigState.serviceModel) { alert('Bitte wählen Sie ein Service-Modell aus.'); return false; }
+    if (konfigState.step === 3 && !konfigState.serviceModel) { alert('Bitte wählen Sie ein Service-Modell aus.'); return false; }
     return true;
 }
 
@@ -1161,9 +1142,8 @@ function konfigNext() {
     saveCurrentStepData(); if (!validateStep()) return;
     if (konfigState.step < TOTAL_STEPS) {
         konfigState.step++;
-        if (konfigState.step === 4) renderFeatures();
-        if (konfigState.step === 5) renderServiceModel();
-        if (konfigState.step === 6) buildSummary();
+        if (konfigState.step === 3) { renderServiceModel(); renderFeatures(); }
+        if (konfigState.step === 4) buildSummary();
         showStep(konfigState.step);
     }
 }
@@ -1522,7 +1502,7 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { clo
         preise: 'Unsere Preise richten sich nach dem gewählten Service-Modell:\n\n<strong>Abo-Modell (inkl. Stundenkontingent):</strong>\n💰 <strong>Starter:</strong> 599 € + 39 €/Mo (30 Min. Änderungen/Mo)\n💰 <strong>Business:</strong> 1.199 € + 79 €/Mo (60 Min. Änderungen/Mo)\n💰 <strong>Premium:</strong> 1.999 € + 129 €/Mo (90 Min. Änderungen/Mo)\n\n<strong>Einmalpreis-Modell:</strong>\n💰 <strong>Starter:</strong> 1.099 € + 9 €/Mo Hosting\n💰 <strong>Business:</strong> 2.199 € + 9 €/Mo Hosting\n💰 <strong>Premium:</strong> 3.499 € + 9 €/Mo Hosting\n\nNutzen Sie gerne unseren <a href="javascript:void(0)" onclick="openKonfigurator();closeChatbot();">Konfigurator</a>, um ein individuelles Angebot zu erhalten!',
         service: 'Wir bieten zwei Preismodelle mit je drei Stufen:\n\n<strong>⭐ Abo-Modell (empfohlen)</strong> — inkl. monatlichem Stundenkontingent:\n• <strong>Starter:</strong> 599 € + 39 €/Mo (30 Min. Änderungen/Mo)\n• <strong>Business:</strong> 1.199 € + 79 €/Mo (60 Min./Mo, Google Business, QR-Karten)\n• <strong>Premium:</strong> 1.999 € + 129 €/Mo (90 Min./Mo, Video-Dreh, Social-Media)\n\n<strong>📋 Einmalpreis-Modell</strong> — Sie bezahlen nur bei Bedarf:\n• <strong>Starter:</strong> 1.099 € + 9 €/Mo Hosting (Änderungen: 75 €/Std)\n• <strong>Business:</strong> 2.199 € + 9 €/Mo Hosting (Änderungen: 69 €/Std)\n• <strong>Premium:</strong> 3.499 € + 9 €/Mo Hosting (Änderungen: 65 €/Std)\n\nAbo-Modelle: Mindestlaufzeit 12 Monate, Kündigungsfrist 3 Monate.',
         ablauf: 'So läuft ein Projekt bei uns ab:\n\n<strong>1.</strong> 📝 <strong>Anfrage</strong> — Sie konfigurieren Ihr Projekt oder kontaktieren uns\n<strong>2.</strong> 💬 <strong>Beratung</strong> — Kostenfreies Erstgespräch\n<strong>3.</strong> 🎨 <strong>Designentwurf</strong> — Wir erstellen ein Konzept nach Ihren Wünschen\n<strong>4.</strong> 💻 <strong>Umsetzung</strong> — Programmierung und Einrichtung\n<strong>5.</strong> ✅ <strong>Abnahme</strong> — Ihre Freigabe und Go-Live\n<strong>6.</strong> 🔧 <strong>Betreuung</strong> — Laufende Wartung (je nach Service-Modell)',
-        konfigurator: 'Mit unserem <strong>Konfigurator</strong> können Sie in wenigen Schritten Ihr Wunschprojekt zusammenstellen:\n\n1️⃣ Branche auswählen\n2️⃣ Umfang festlegen\n3️⃣ Design wählen\n4️⃣ Zusatzfunktionen\n5️⃣ Service-Modell\n6️⃣ Zusammenfassung & Absenden\n\nDie Anfrage ist <strong>unverbindlich und kostenlos</strong>.\n\n<a href="javascript:void(0)" onclick="openKonfigurator();closeChatbot();">→ Jetzt Konfigurator starten</a>',
+        konfigurator: 'Mit unserem <strong>Konfigurator</strong> können Sie in wenigen Schritten Ihr Wunschprojekt zusammenstellen:\n\n1️⃣ Branche auswählen\n2️⃣ Design wählen\n3️⃣ Service-Modell & Zusatzfunktionen\n4️⃣ Zusammenfassung & Absenden\n\nDie Anfrage ist <strong>unverbindlich und kostenlos</strong>.\n\n<a href="javascript:void(0)" onclick="openKonfigurator();closeChatbot();">→ Jetzt Konfigurator starten</a>',
         kontakt: 'Sie können uns auf verschiedenen Wegen erreichen:\n\n📧 <strong>E-Mail:</strong> info.forestcode@gmail.com\n🌐 <strong>Website:</strong> forestcode.de\n📝 <strong>Konfigurator:</strong> Direkt hier auf unserer Seite\n\nOder scrollen Sie zum <a href="#kontakt" onclick="closeChatbot();">Kontaktbereich</a> unserer Website.',
         dsgvo: 'Datenschutz ist uns sehr wichtig! Alle unsere Websites werden <strong>DSGVO-konform</strong> erstellt. Das bedeutet:\n\n🔒 Impressum und Datenschutzerklärung\n🔒 Cookie-Consent-Management\n🔒 Sichere Datenübertragung (SSL)\n🔒 Keine unnötige Datenerhebung\n\nDies ist in allen unseren Service-Modellen automatisch enthalten.',
         branchen: 'Wir sind spezialisiert auf Websites für:\n\n🏥 <strong>Arztpraxen</strong> — Praxisvorstellung, Online-Terminbuchung, Leistungsübersicht\n🔨 <strong>Handwerksbetriebe</strong> — Leistungskatalog, Referenzprojekte, Anfragefunktion\n🚗 <strong>KFZ-Werkstätten</strong> — Serviceangebot, Terminvereinbarung, Standortinfo\n\nNatürlich können wir auch für andere Branchen individuelle Websites erstellen!',
